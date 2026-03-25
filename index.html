@@ -3,12 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>v1.1 아동 인권 수호 작전</title>
-    <!-- React 및 필수 라이브러리 CDN -->
+    <title>아동 인권 수호 작전 v1.6</title>
+    <!-- 필수 라이브러리 CDN -->
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide 아이콘 라이브러리 -->
+    <script src="https://unpkg.com/lucide@latest"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
         body { font-family: 'Inter', sans-serif; }
@@ -18,22 +20,32 @@
     <div id="root"></div>
 
     <script type="text/babel">
-        const { useState } = React;
+        const { useState, useEffect } = React;
 
-        // 아이콘 컴포넌트
-        const IconGlobe = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>;
-        const IconLock = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>;
-        const IconShield = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>;
-        const IconKey = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3m-3-3l-4-4"/></svg>;
-        const IconEyeOff = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 19c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>;
-        const IconTrendingDown = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/><polyline points="17 18 23 18 23 12"/></svg>;
-        const IconAlertCircle = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>;
+        // 아이콘 컴포넌트 (SVG 직접 구현으로 CDN 의존성 최소화)
+        const Globe = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>;
+        const Lock = ({size=24}) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>;
+        const Shield = ({size=24}) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>;
+        const Key = ({size=24}) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3m-3-3l-4-4"/></svg>;
+        const EyeOff = ({size=24}) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 19c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>;
+        const TrendingDown = ({size=24}) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/><polyline points="17 18 23 18 23 12"/></svg>;
+        const AlertCircle = ({size=24}) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>;
+        const Calculator = ({size=24}) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="4" y="2" width="16" height="20" rx="2" ry="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="16" y2="14"/><line x1="8" y1="18" x2="16" y2="18"/></svg>;
+        const Info = ({size=24}) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>;
+        const ChevronRight = ({size=24}) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>;
+        const Construction = ({size=24}) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="18" width="20" height="2" rx="1"/><path d="M17 18v-2a5 5 0 0 0-10 0v2"/><path d="M5 10l7-7 7 7"/></svg>;
 
         const App = () => {
             const [activeTab, setActiveTab] = useState(null);
             const [pendingCouncil, setPendingCouncil] = useState(null);
             const [passwordInput, setPasswordInput] = useState("");
             const [error, setError] = useState(false);
+
+            const [scores, setScores] = useState({
+                c1: { red: 0, green: 0, blue: 0 },
+                c2: { red: 0, green: 0, blue: 0 },
+                c3: { red: 0, green: 0, blue: 0 }
+            });
 
             const councils = [
                 {
@@ -44,7 +56,7 @@
                     countries: "캐나다, 독일, 네덜란드, 스웨덴, 뉴질랜드",
                     quote: "세상 모든 아이를 구하고 싶지만, 우리 아이들을 보살필 힘도 부족해지고 있습니다.",
                     initialStatus: { red: 4, green: 9, blue: 0 },
-                    description: "여러분은 세계에서 가장 앞선 아동 복지 시스템을 갖췄습니다. 이곳에서 아동들은 행복하고 건강하게 자랍니다. 하지만 제 2 협의체에서 구조된 아동들이 여러분의 나라로 오고 있습니다. 제 2 연합체의 아동을 치료하느라 아동 복지 예산이 바닥나고 있습니다. 자국민들은 '우리 아이들의 복지가 먼저다.'라며 반발합니다. 자국민의 분노를 막기 위해 아래 미션을 수행하세요.",
+                    description: "여러분은 세계에서 가장 앞선 아동 복지 시스템을 갖췄습니다. 하지만 제 2 협의체에서 구조된 아동들이 여러분의 나라로 오고 있습니다. 제 2 연합체의 아동을 치료하느라 아동 복지 예산이 바닥나고 있습니다. 자국민들은 '우리 아이들의 복지가 먼저다.'라며 반발합니다. 자국민의 분노를 막기 위해 아래 미션을 수행하세요.",
                     missions: [
                         { id: "M1", title: "책임 전가", content: "제 2 협의체가 '아동 보호 시설'을 건설합니다. 건설에 성공한다면 우리는 큰 도움을 받습니다. 제 3 협의체에게 '위기 아동 보호 시설 건립 비용'을 같이 내자고 강력히 요구하세요. (제 3 협의체와 함께 초록색 토큰을 9개 모아 제 2협의체에게 주세요.)" },
                         { id: "M2", title: "시스템 전수", content: "우리는 위기 아동을 더 받아들이기 어렵습니다. 제 2 협의체에게 위기 아동의 숫자를 줄여달라고 협상하세요. (여러분은 아동인권의 수호자입니다. 무조건 빨간 토큰을 1개 이상 받아와야 합니다.)" }
@@ -52,7 +64,7 @@
                     winConditions: [
                         { text: "위기아동지수(🔴)가 제 2 협의체보다 적음", point: 1 },
                         { text: "보유한 아동복지예산(🟢)이 위기아동지수(🔴)보다 많음", point: 1 },
-                        { text: "제 2 협의체가 '아동 보호 시설'을 건설함", point: 3 }
+                        { text: "제 2 협의체가 '아동 보호 시설'을 건설함(예산 10개 달성)", point: 3 }
                     ],
                     theme: "border-blue-500",
                     accent: "text-blue-500"
@@ -102,7 +114,7 @@
                 },
                 {
                     id: 6,
-                    name: "제6협의체 (샘플)",
+                    name: "제 6 협의체 (샘플)",
                     password: "9999",
                     title: "샘플 작전: 테스트 (Sample Mission)",
                     countries: "국가 A, 국가 B, 국가 C",
@@ -112,7 +124,7 @@
                     missions: [
                         { id: "T1", title: "데이터 검토", content: "화면의 🔴, 🟢 코인의 개수가 실제 코인과 일치하는지 확인하십시오." },
                         { id: "T2", title: "보안 유지", content: "비밀번호는 같은 협의체끼리만 공유되어야 합니다." },
-                        { id: "T3", title: "미션", content: "여러분이 할 일이 여기에 적혀 나옵니다." }
+                        { id: "T3", title: "미션 확인", content: "여러분이 할 일이 여기에 적혀 나옵니다. 협상을 통해 국익을 지키세요." }
                     ],
                     winConditions: [
                         { text: "모든 코인의 합계를 15개 이상으로 유지하기", point: 1 },
@@ -124,21 +136,22 @@
                 }
             ];
 
-            const handleCouncilSelect = (council) => {
-                setPendingCouncil(council);
-                setPasswordInput("");
-                setError(false);
-            };
-
             const handlePasswordSubmit = (e) => {
                 e.preventDefault();
+                if (passwordInput === "9998") {
+                    setActiveTab('score');
+                    setPendingCouncil(null);
+                    setError(false);
+                    return;
+                }
                 if (passwordInput === "9999") {
                     setActiveTab(6);
                     setPendingCouncil(null);
                     setError(false);
                     return;
                 }
-                if (passwordInput === pendingCouncil.password) {
+
+                if (pendingCouncil && passwordInput === pendingCouncil.password) {
                     setActiveTab(pendingCouncil.id);
                     setPendingCouncil(null);
                     setError(false);
@@ -148,96 +161,212 @@
                 }
             };
 
-            const handleBackToMain = () => {
-                setActiveTab(null);
-                setPendingCouncil(null);
-                setPasswordInput("");
-                setError(false);
+            const handleScoreChange = (council, color, value) => {
+                const val = parseInt(value) || 0;
+                setScores(prev => ({
+                    ...prev,
+                    [council]: { ...prev[council], [color]: val }
+                }));
             };
 
+            const c1EffectiveGreen = scores.c1.green + scores.c1.blue;
+            const c2EffectiveGreen = scores.c2.green + scores.c2.blue;
+            const isFacilityBuilt = c2EffectiveGreen >= 10;
+
+            const calculateResults = () => {
+                const results = { c1: 0, c2: 0, c3: 0 };
+                if (scores.c1.red < scores.c2.red) results.c1 += 1;
+                if (c1EffectiveGreen > scores.c1.red) results.c1 += 1;
+                if (isFacilityBuilt) results.c1 += 3;
+
+                if (scores.c2.red < 10) results.c2 += 1;
+                if (c2EffectiveGreen > 1) results.c2 += 1; 
+                if (c2EffectiveGreen > scores.c2.red) results.c2 += 3;
+
+                if (scores.c3.red >= 0 && scores.c3.red <= 2) results.c3 += 1;
+                const bluePenalty = Math.max(0, 6 - scores.c3.blue);
+                results.c3 -= bluePenalty;
+                
+                const total1 = scores.c1.green + scores.c1.blue;
+                const total2 = scores.c2.green + scores.c2.blue;
+                const total3 = scores.c3.green + scores.c3.blue;
+                if (total3 > total1 && total3 > total2) results.c3 += 3;
+
+                return results;
+            };
+
+            const finalResults = calculateResults();
+
             const renderHome = () => (
-                <div className="flex flex-col items-center justify-center min-h-[80vh] text-center p-6 text-left">
+                <div className="flex flex-col items-center justify-center min-h-[90vh] text-center p-6">
                     <div className="bg-slate-800 p-8 md:p-12 rounded-3xl shadow-2xl border border-slate-700 max-w-2xl w-full">
-                        <div className="flex justify-center mb-6 animate-pulse text-blue-400"><IconGlobe /></div>
-                        <h1 className="text-4xl font-black text-white mb-4 tracking-tight text-center">글로벌 아동 인권 수호 작전</h1>
+                        <div className="flex justify-center mb-6 animate-pulse text-blue-400"><Globe /></div>
+                        <h1 className="text-4xl font-black text-white mb-4 tracking-tight">글로벌 아동 인권 수호 작전</h1>
                         <div className="h-1 w-20 bg-blue-500 mx-auto mb-6 rounded-full"></div>
-                        <p className="text-slate-400 mb-10 text-lg leading-relaxed text-center">
+                        <p className="text-slate-400 mb-10 text-lg leading-relaxed">
                             본 시스템은 각 협의체 외교관에게만 허용된 1급 기밀 정보를 포함하고 있습니다. 소속된 협의체를 선택하고 보안 코드를 입력하십시오.
                         </p>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                             {councils.filter(c => c.id !== 6).map((council) => (
                                 <button
                                     key={council.id}
-                                    onClick={() => handleCouncilSelect(council)}
+                                    onClick={() => { setPendingCouncil(council); setPasswordInput(""); setError(false); }}
                                     className="bg-slate-700 hover:bg-slate-600 text-white font-bold py-5 px-6 rounded-2xl transition-all border-b-4 border-slate-900 active:border-b-0 active:translate-y-1 flex flex-col items-center gap-2 group"
                                 >
-                                    <div className="group-hover:scale-110 transition-transform text-slate-400 group-hover:text-blue-400"><IconShield /></div>
+                                    <div className="group-hover:scale-110 transition-transform text-slate-400 group-hover:text-blue-400"><Shield /></div>
                                     {council.name}
                                 </button>
                             ))}
                         </div>
+                        <p className="mt-8 text-slate-600 text-xs font-mono uppercase tracking-widest cursor-default">Security Protocol v1.6 Active</p>
                     </div>
                 </div>
             );
 
             const renderPasswordScreen = () => (
-                <div className="flex flex-col items-center justify-center min-h-[80vh] p-6 text-left">
+                <div className="flex flex-col items-center justify-center min-h-[90vh] p-6 text-left">
                     <div className="bg-slate-800 p-8 rounded-3xl shadow-2xl border border-slate-700 max-w-md w-full">
-                        <div className="flex justify-center mb-6">
-                            <div className="p-4 bg-slate-900 rounded-full border border-slate-700 text-yellow-500">
-                                <IconLock />
+                        <div className="flex justify-center mb-6 text-yellow-500">
+                            <div className="p-4 bg-slate-900 rounded-full border border-slate-700">
+                                <Lock size={32} />
                             </div>
                         </div>
-                        <h2 className="text-2xl font-bold text-white text-center mb-2">{pendingCouncil.name} 보안 접속</h2>
+                        <h2 className="text-2xl font-bold text-white text-center mb-2">보안 터미널 접속</h2>
                         <p className="text-slate-400 text-center mb-8">4자리 기밀 보안 코드를 입력하십시오.</p>
                         
                         <form onSubmit={handlePasswordSubmit} className="space-y-6">
                             <div className="relative">
-                                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500"><IconKey /></div>
+                                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500"><Key size={20} /></div>
                                 <input
                                     type="password"
                                     value={passwordInput}
                                     onChange={(e) => setPasswordInput(e.target.value)}
-                                    placeholder="PASSWORD"
+                                    placeholder="••••"
                                     autoFocus
-                                    className={`w-full bg-slate-950 border-2 ${error ? 'border-red-500' : 'border-slate-700'} rounded-xl py-4 pl-12 pr-4 text-white text-center text-2xl tracking-[1em] focus:outline-none focus:border-blue-500 transition-colors`}
+                                    className={`w-full bg-slate-950 border-2 ${error ? 'border-red-500' : 'border-slate-700'} rounded-xl py-4 pl-12 pr-4 text-white text-center text-2xl tracking-[0.5em] focus:outline-none focus:border-blue-500 transition-colors`}
                                 />
                             </div>
-                            
                             {error && (
                                 <div className="flex items-center gap-2 text-red-500 text-sm justify-center animate-bounce">
-                                    <IconAlertCircle />
-                                    <span>보안 코드가 일치하지 않습니다.</span>
+                                    <AlertCircle size={16} />
+                                    <span>접속 권한이 없습니다.</span>
                                 </div>
                             )}
-                            
                             <div className="grid grid-cols-2 gap-4">
                                 <button type="button" onClick={() => setPendingCouncil(null)} className="py-4 rounded-xl font-bold text-slate-400 hover:bg-slate-700 transition-colors">취소</button>
-                                <button type="submit" className="py-4 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold transition-all shadow-lg shadow-blue-900/20">접속 승인</button>
+                                <button type="submit" className="py-4 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold transition-all">접속 승인</button>
                             </div>
                         </form>
                     </div>
                 </div>
             );
 
+            const renderScoreCalculator = () => (
+                <div className="max-w-5xl mx-auto p-4 md:p-8 text-left">
+                    <button onClick={() => setActiveTab(null)} className="mb-6 text-slate-400 hover:text-white flex items-center transition-colors font-medium">← 메인 터미널</button>
+                    <div className="bg-slate-900 border-t-8 border-yellow-500 rounded-3xl shadow-2xl overflow-hidden mb-8">
+                        <div className="bg-slate-800 p-8 border-b border-slate-700 text-left">
+                            <div className="flex items-center justify-between mb-4">
+                                <span className="bg-yellow-600 text-black text-[10px] font-black px-2 py-1 rounded tracking-[0.2em] uppercase flex items-center gap-1">Administrator Access</span>
+                                <span className="text-slate-500 text-xs font-mono tracking-widest uppercase text-left">evaluation_v1.6</span>
+                            </div>
+                            <h2 className="text-4xl font-black text-white mb-3 tracking-tight flex items-center gap-4 text-left">
+                                <Calculator className="text-yellow-500" size={36} /> 최종 점수 집계 터미널
+                            </h2>
+                            <p className="text-slate-400 leading-relaxed text-left">각 협의체의 코인 현황을 입력하세요. 1·2협의체는 파란색 토큰이 초록색 토큰과 동일하게 합산됩니다.</p>
+                        </div>
+                        <div className="p-8 overflow-x-auto">
+                            <table className="w-full text-left border-collapse">
+                                <thead>
+                                    <tr className="border-b border-slate-800">
+                                        <th className="py-4 px-4 text-slate-500 font-bold uppercase tracking-widest text-xs">협의체</th>
+                                        <th className="py-4 px-4 text-red-500 font-bold uppercase tracking-widest text-xs">위기 아동(🔴)</th>
+                                        <th className="py-4 px-4 text-emerald-500 font-bold uppercase tracking-widest text-xs">복지 예산(🟢)</th>
+                                        <th className="py-4 px-4 text-blue-500 font-bold uppercase tracking-widest text-xs">경제 예산(🔵)</th>
+                                        <th className="py-4 px-4 text-yellow-500 font-bold uppercase tracking-widest text-xs">최종 점수</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-slate-800/50">
+                                    {/* 1, 2, 3 협의체 데이터 맵핑 */}
+                                    {['c1', 'c2', 'c3'].map((key, index) => (
+                                        <tr key={key}>
+                                            <td className="py-6 px-4">
+                                                <div className="font-black text-white">제 {index + 1} 협의체</div>
+                                                {key === 'c1' && (
+                                                    <div className={`mt-2 flex items-center gap-2 text-[10px] font-bold ${isFacilityBuilt ? 'text-emerald-400' : 'text-slate-600'}`}>
+                                                        <Construction size={12} /> {isFacilityBuilt ? '시설 건설 성공' : '시설 건설 대기 중'}
+                                                    </div>
+                                                )}
+                                                {key === 'c2' && (
+                                                    <div className={`mt-2 text-[9px] font-bold px-2 py-0.5 rounded-full inline-block ${isFacilityBuilt ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-slate-800 text-slate-500'}`}>
+                                                        건설 예산(🟢+🔵): {c2EffectiveGreen}/10
+                                                    </div>
+                                                )}
+                                            </td>
+                                            <td className="py-6 px-4">
+                                                <input type="number" value={scores[key].red} onChange={(e) => handleScoreChange(key, 'red', e.target.value)} className="w-20 bg-slate-950 border border-slate-800 rounded-lg p-3 text-center text-white focus:border-red-500 outline-none" />
+                                            </td>
+                                            <td className="py-6 px-4">
+                                                <input type="number" value={scores[key].green} onChange={(e) => handleScoreChange(key, 'green', e.target.value)} className="w-20 bg-slate-950 border border-slate-800 rounded-lg p-3 text-center text-white focus:border-emerald-500 outline-none" />
+                                            </td>
+                                            <td className="py-6 px-4">
+                                                <input type="number" value={scores[key].blue} onChange={(e) => handleScoreChange(key, 'blue', e.target.value)} className="w-20 bg-slate-950 border border-slate-800 rounded-lg p-3 text-center text-white focus:border-blue-500 outline-none" />
+                                            </td>
+                                            <td className="py-6 px-4">
+                                                <div className="text-3xl font-black text-white">{finalResults[key]} <span className="text-xs text-slate-500">PT</span></div>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                        <div className="p-8 bg-slate-950/50 grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div className="bg-slate-800/50 p-4 rounded-xl border border-slate-700 text-left">
+                                <h4 className="text-blue-400 font-bold text-sm mb-2 flex items-center gap-2 text-left"><Info size={14}/> 1협의체 조건 상세</h4>
+                                <ul className="text-[11px] text-slate-400 space-y-1 text-left">
+                                    <li className={scores.c1.red < scores.c2.red ? "text-emerald-400" : ""}>- 위기아동 {scores.c1.red} &lt; 2협의체 {scores.c2.red} (+1)</li>
+                                    <li className={c1EffectiveGreen > scores.c1.red ? "text-emerald-400" : ""}>- 복지합계({c1EffectiveGreen}) &gt; 위기아동 {scores.c1.red} (+1)</li>
+                                    <li className={isFacilityBuilt ? "text-emerald-400" : ""}>- 아동보호시설(2협의체 🟢+🔵 합 10개 시) (+3)</li>
+                                </ul>
+                            </div>
+                            <div className="bg-slate-800/50 p-4 rounded-xl border border-slate-700 text-left">
+                                <h4 className="text-red-400 font-bold text-sm mb-2 flex items-center gap-2 text-left"><Info size={14}/> 2협의체 조건 상세</h4>
+                                <ul className="text-[11px] text-slate-400 space-y-1 text-left">
+                                    <li className={scores.c2.red < 10 ? "text-emerald-400" : ""}>- 위기아동 {scores.c2.red} &lt; 10개 (+1)</li>
+                                    <li className={c2EffectiveGreen > 1 ? "text-emerald-400" : ""}>- 복지합계({c2EffectiveGreen}) 상승 (+1)</li>
+                                    <li className={c2EffectiveGreen > scores.c2.red ? "text-emerald-400" : ""}>- 복지합계({c2EffectiveGreen}) &gt; 위기아동 {scores.c2.red} (+3)</li>
+                                </ul>
+                            </div>
+                            <div className="bg-slate-800/50 p-4 rounded-xl border border-slate-700 text-left">
+                                <h4 className="text-emerald-400 font-bold text-sm mb-2 flex items-center gap-2 text-left"><Info size={14}/> 3협의체 조건 상세</h4>
+                                <ul className="text-[11px] text-slate-400 space-y-1 text-left">
+                                    <li className={scores.c3.red <= 2 ? "text-emerald-400" : ""}>- 위기아동 {scores.c3.red}개 (0~2 유지) (+1)</li>
+                                    <li className={scores.c3.blue < 6 ? "text-red-400" : "text-emerald-400"}>- 경제예산 페널티: {Math.max(0, 6 - scores.c3.blue)}점 감점</li>
+                                    <li className={(scores.c3.green + scores.c3.blue) > (scores.c1.green + scores.c1.blue) && (scores.c3.green + scores.c3.blue) > (scores.c2.green + scores.c2.blue) ? "text-emerald-400" : ""}>- 전체 코인 최다 보유 (+3)</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+
             const renderCouncilPage = (council) => (
                 <div className="max-w-4xl mx-auto p-4 md:p-8 text-left">
-                    <button onClick={handleBackToMain} className="mb-6 text-slate-400 hover:text-white flex items-center transition-colors font-medium">← 메인 보안 터미널로 돌아가기</button>
+                    <button onClick={() => setActiveTab(null)} className="mb-6 text-slate-400 hover:text-white flex items-center transition-colors font-medium">← 메인 보안 터미널</button>
                     <div className={`bg-slate-900 border-t-8 ${council.theme} rounded-3xl shadow-2xl overflow-hidden`}>
-                        <div className="bg-slate-800 p-8 border-b border-slate-700">
+                        <div className="bg-slate-800 p-8 border-b border-slate-700 text-left">
                             <div className="flex items-center justify-between mb-4">
-                                <span className="bg-red-600 text-white text-[10px] font-black px-2 py-1 rounded tracking-[0.2em] uppercase flex items-center gap-1"><IconLock /> Top Secret</span>
-                                <span className="text-slate-500 text-xs font-mono tracking-widest text-left">ENCRYPTED_ID: {council.id}X-2024-MUN</span>
+                                <span className="bg-red-600 text-white text-[10px] font-black px-2 py-1 rounded tracking-[0.2em] uppercase flex items-center gap-1"><Lock size={10} /> Top Secret</span>
+                                <span className="text-slate-500 text-xs font-mono tracking-widest uppercase">{council.name}_ID: {council.id}X-2024-MUN</span>
                             </div>
-                            <h2 className="text-4xl font-black text-white mb-3 tracking-tight text-left">{council.title}</h2>
+                            <h2 className="text-4xl font-black text-white mb-3 tracking-tight">{council.title}</h2>
                             <div className="flex items-center gap-2">
-                                <div className={`w-2 h-2 rounded-full animate-pulse ${council.id === 1 ? 'bg-blue-500' : council.id === 2 ? 'bg-red-500' : council.id === 3 ? 'bg-emerald-500' : 'bg-purple-500'}`}></div>
-                                <p className={`${council.accent} font-bold text-lg uppercase tracking-wider`}>{council.name} 지시서</p>
+                                <div className={`w-2 h-2 rounded-full animate-pulse ${council.theme.replace('border-', 'bg-')}`}></div>
+                                <p className={`${council.accent} font-bold text-lg uppercase tracking-wider`}>{council.name} 공식 지시서</p>
                             </div>
-                            <p className="text-slate-400 mt-2 text-sm text-left">{council.countries}</p>
+                            <p className="text-slate-400 mt-2 text-sm font-medium">{council.countries}</p>
                         </div>
-
-                        <div className="p-8 bg-slate-800/30 flex flex-wrap gap-8 justify-around border-b border-slate-700 text-left">
+                        <div className="p-8 bg-slate-800/30 flex flex-wrap gap-8 justify-around border-b border-slate-700">
                             <div className="text-center group">
                                 <div className="w-20 h-20 bg-red-600 rounded-2xl flex items-center justify-center text-white text-3xl font-black mx-auto mb-3 shadow-lg shadow-red-900/40">{council.initialStatus.red}</div>
                                 <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest text-center">위기 아동 지수</p>
@@ -253,41 +382,39 @@
                                 </div>
                             )}
                         </div>
-
-                        <div className="p-8 space-y-10 text-left">
+                        <div className="p-8 space-y-12 text-left">
                             <section>
-                                <div className="flex items-center gap-3 mb-5 text-yellow-500"><IconEyeOff /> <h3 className="text-2xl font-bold text-white tracking-tight text-left">현황 및 상황 분석</h3></div>
+                                <div className="flex items-center gap-3 mb-5 text-yellow-500"><EyeOff size={24} /> <h3 className="text-2xl font-bold text-white tracking-tight">현황 및 상황 분석</h3></div>
                                 <div className="bg-slate-800 p-6 rounded-2xl border-l-4 border-yellow-500 italic text-slate-300 text-lg leading-relaxed shadow-inner">"{council.quote}"</div>
-                                <p className="mt-6 text-slate-400 leading-relaxed text-base text-left">{council.description}</p>
+                                <p className="mt-6 text-slate-400 leading-relaxed text-base">{council.description}</p>
                             </section>
-
                             <section>
-                                <div className="flex items-center gap-3 mb-5 text-blue-500"><IconShield /> <h3 className="text-2xl font-bold text-white tracking-tight text-left">비밀 개별 미션</h3></div>
+                                <div className="flex items-center gap-3 mb-5 text-blue-500"><Shield size={24} /> <h3 className="text-2xl font-bold text-white tracking-tight">비밀 개별 미션</h3></div>
                                 <div className="grid gap-5">
                                     {council.missions.map((m) => (
-                                        <div key={m.id} className="bg-slate-800 p-6 rounded-2xl border border-slate-700 shadow-sm hover:border-blue-500/50 transition-colors text-left">
-                                            <div className="flex items-center gap-2 mb-2">
+                                        <div key={m.id} className="bg-slate-800 p-6 rounded-2xl border border-slate-700 shadow-sm hover:border-blue-500/50 transition-colors">
+                                            <div className="flex items-center gap-3 mb-2">
                                                 <span className="text-blue-500 font-black text-xs uppercase tracking-widest px-2 py-0.5 bg-blue-500/10 rounded">{m.id}</span>
-                                                <span className="text-white font-bold text-lg text-left">{m.title}</span>
+                                                <span className="text-white font-bold text-lg">{m.title}</span>
                                             </div>
-                                            <p className="text-slate-300 leading-relaxed text-left">{m.content}</p>
+                                            <p className="text-slate-300 leading-relaxed">{m.content}</p>
                                         </div>
                                     ))}
                                 </div>
                             </section>
-
                             <section>
-                                <div className="flex items-center gap-3 mb-5 text-emerald-500"><IconTrendingDown /> <h3 className="text-2xl font-bold text-white tracking-tight text-left">최종 승리 조건 (Victory)</h3></div>
+                                <div className="flex items-center gap-3 mb-5 text-emerald-500"><TrendingDown size={24} /> <h3 className="text-2xl font-bold text-white tracking-tight">최종 승리 조건 (Victory)</h3></div>
                                 <div className="grid gap-3">
                                     {council.winConditions.map((cond, idx) => {
                                         const isNegative = cond.point < 0;
                                         return (
-                                            <div key={idx} className="flex items-center justify-between bg-slate-800/20 p-5 rounded-2xl border border-slate-800 text-left">
-                                                <span className="text-slate-300 font-medium text-left">{cond.text}</span>
+                                            <div key={idx} className="flex items-center justify-between bg-slate-800/20 p-5 rounded-2xl border border-slate-800">
+                                                <div className="flex items-center gap-3">
+                                                    <ChevronRight size={16} className="text-emerald-500" />
+                                                    <span className="text-slate-300 font-medium">{cond.text}</span>
+                                                </div>
                                                 <span className={`px-4 py-1.5 rounded-full text-sm font-black border ${
-                                                    isNegative 
-                                                    ? 'bg-red-600/20 text-red-400 border-red-600/30' 
-                                                    : 'bg-emerald-600/20 text-emerald-400 border-emerald-600/30'
+                                                    isNegative ? 'bg-red-600/20 text-red-400 border-red-600/30' : 'bg-emerald-600/20 text-emerald-400 border-emerald-600/30'
                                                 }`}>
                                                     {isNegative ? cond.point : `+${cond.point}`}
                                                 </span>
@@ -297,16 +424,17 @@
                                 </div>
                             </section>
                         </div>
-                        <div className="p-6 bg-slate-950 text-slate-600 text-[10px] font-mono text-center uppercase tracking-[0.3em] border-t border-slate-800">AUTHORIZED PERSONNEL ONLY • SYSTEM TERMINAL ACCESS</div>
+                        <div className="p-6 bg-slate-950 text-slate-600 text-[10px] font-mono text-center uppercase tracking-[0.3em] border-t border-slate-800">Authorized Personnel Only • Secure Data Terminal Access Active</div>
                     </div>
                 </div>
             );
 
             return (
-                <div className="min-h-screen text-left">
+                <div className="min-h-screen bg-slate-950 text-slate-200 font-sans">
                     {!activeTab && !pendingCouncil && renderHome()}
                     {pendingCouncil && renderPasswordScreen()}
-                    {activeTab && renderCouncilPage(councils.find(c => c.id === activeTab))}
+                    {activeTab === 'score' && renderScoreCalculator()}
+                    {typeof activeTab === 'number' && renderCouncilPage(councils.find(c => c.id === activeTab))}
                 </div>
             );
         };
