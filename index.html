@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>아동 인권 수호 작전 v3.2.0</title>
+    <title>아동 인권 수호 작전 v3.2.1</title>
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -46,10 +46,16 @@
         if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
+        // ── SHA-256 해시 함수 ─────────────────────────────────────────
+        const hashPw = async (pw) => {
+            const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(pw));
+            return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+        };
+
         // ── 협의체 데이터 ─────────────────────────────────────────────
         const councils = [
             {
-                id: 1, key: 'c1', name: "제 1 협의체", password: "0912",
+                id: 1, key: 'c1', name: "제 1 협의체", pwKey: "c1",
                 countries: ["캐나다", "독일", "네덜란드", "스웨덴", "뉴질랜드"],
                 theme: "border-blue-500", accent: "text-blue-600",
                 title: "보호의 한계",
@@ -73,7 +79,7 @@
                 ]
             },
             {
-                id: 2, key: 'c2', name: "제 2 협의체", password: "1101",
+                id: 2, key: 'c2', name: "제 2 협의체", pwKey: "c2",
                 countries: ["팔레스타인", "미얀마", "예멘", "우크라이나", "시리아", "아프가니스탄"],
                 theme: "border-red-500", accent: "text-red-600",
                 title: "비상 탈출",
@@ -98,7 +104,7 @@
                 ]
             },
             {
-                id: 3, key: 'c3', name: "제 3 협의체", password: "9070",
+                id: 3, key: 'c3', name: "제 3 협의체", pwKey: "c3",
                 countries: ["대한민국", "러시아", "미국", "프랑스"],
                 theme: "border-emerald-500", accent: "text-emerald-600",
                 title: "세계의 강대국",
@@ -155,17 +161,21 @@
             const [aa, setAa]   = useState(1);
             const [c3WelfareGiven, setC3WelfareGiven] = useState(false);
             const [sessionActive, setSessionActive]   = useState(null); // null = 로딩 중
+            const [pwHashes, setPwHashes]             = useState(null); // null = 로딩 중
 
             // ── 함수 ──────────────────────────────────────────────────
 
-            const handlePasswordSubmit = (e) => {
+            const handlePasswordSubmit = async (e) => {
                 e.preventDefault();
-                if (passwordInput === "9997") { setActiveTab('public'); setPasswordInput(""); setPendingCouncil(null); return; }
-                if (passwordInput === "9998") { setActiveTab('admin');  setPasswordInput(""); setPendingCouncil(null); return; }
-                if (pendingCouncil && passwordInput === "9999") {
+                if (!pwHashes) return;
+                const h = await hashPw(passwordInput);
+                if (h === pwHashes.public) { setActiveTab('public'); setPasswordInput(""); setPendingCouncil(null); return; }
+                if (h === pwHashes.admin)  { setActiveTab('admin');  setPasswordInput(""); setPendingCouncil(null); return; }
+                if (pendingCouncil && h === pwHashes.demo) {
                     setUser({ councilKey: pendingCouncil.key, councilId: pendingCouncil.id, country: selectedCountry, demo: true });
                     setActiveTab(pendingCouncil.id);
-                } else if (pendingCouncil && passwordInput === pendingCouncil.password) {
+                    setPendingCouncil(null); setPasswordInput("");
+                } else if (pendingCouncil && h === pwHashes[pendingCouncil.pwKey]) {
                     setUser({ councilKey: pendingCouncil.key, councilId: pendingCouncil.id, country: selectedCountry });
                     setActiveTab(pendingCouncil.id);
                     setPendingCouncil(null); setPasswordInput("");
@@ -213,7 +223,7 @@
                     session_active: false
                 });
                 setTimerSeconds(300); setTimerRunning(false); setTimerStarted(false);
-                alert("초기화 완료! 다음 수업을 시작할 수 있습니다.");
+                alert("초기화 완료!");
             };
 
             const adminManual = (f, t, type, amt) => {
@@ -236,11 +246,26 @@
                 db.ref('game/logs').on('value', snap => snap.val() && setLogs(Object.values(snap.val()).reverse().slice(0,5)));
                 db.ref('game/c3_welfare_given').on('value', snap => setC3WelfareGiven(!!snap.val()));
                 db.ref('game/session_active').on('value', snap => setSessionActive(!!snap.val()));
+                // 비번 해시 로드 (없으면 기본값으로 초기화)
+                db.ref('game/config').once('value', async snap => {
+                    if (snap.val()?.pw) {
+                        setPwHashes(snap.val().pw);
+                        db.ref('game/config/pw').on('value', s => s.val() && setPwHashes(s.val()));
+                    } else {
+                        const defaults = { c1:'0912', c2:'1101', c3:'9070', public:'9997', admin:'9998', demo:'9999' };
+                        const hashed = {};
+                        for (const [k, v] of Object.entries(defaults)) hashed[k] = await hashPw(v);
+                        await db.ref('game/config/pw').set(hashed);
+                        setPwHashes(hashed);
+                        db.ref('game/config/pw').on('value', s => s.val() && setPwHashes(s.val()));
+                    }
+                });
                 return () => {
                     db.ref('game/scores').off();
                     db.ref('game/logs').off();
                     db.ref('game/c3_welfare_given').off();
                     db.ref('game/session_active').off();
+                    db.ref('game/config/pw').off();
                 };
             }, []);
 
@@ -323,8 +348,8 @@
 
             // ── 화면 분기 ─────────────────────────────────────────────
 
-            // 로딩 중
-            if (sessionActive === null) return (
+            // 로딩 중 (Firebase 연결 대기)
+            if (sessionActive === null || pwHashes === null) return (
                 <div className="flex items-center justify-center min-h-screen bg-slate-50">
                     <div className="text-gray-300 text-4xl animate-pulse">⏳</div>
                 </div>
@@ -354,22 +379,20 @@
                         <div className="fixed inset-0 modal-overlay flex items-center justify-center z-50 p-6">
                             <div className="bg-white rounded-3xl shadow-2xl p-10 max-w-sm w-full popup-in text-center">
                                 <div className="text-4xl mb-4">🔑</div>
-                                <h2 className="text-xl font-black mb-6">선생님 확인</h2>
-                                <form onSubmit={(e)=>{
+                                <h2 className="text-xl font-black mb-6">확인</h2>
+                                <form onSubmit={async (e)=>{
                                     e.preventDefault();
-                                    if (passwordInput === '9997') {
+                                    if (!pwHashes) return;
+                                    const h = await hashPw(passwordInput);
+                                    if (h === pwHashes.public || h === pwHashes.admin) {
                                         db.ref('game/session_active').set(true);
-                                        setActiveTab('public');
-                                    } else if (passwordInput === '9998') {
-                                        db.ref('game/session_active').set(true);
-                                        setActiveTab('admin');
                                     } else {
-                                        alert('선생님 코드가 아닙니다.');
+                                        alert('수업 시작 코드가 아닙니다.');
                                     }
                                     setPasswordInput(''); setPendingCouncil(null);
                                 }} className="space-y-4">
                                     <input type="password" value={passwordInput} onChange={e=>setPasswordInput(e.target.value)}
-                                        placeholder="선생님 코드 입력" autoFocus
+                                        placeholder="수업 시작 코드 입력" autoFocus
                                         className="w-full p-4 bg-gray-50 rounded-xl text-center text-xl border-2 border-gray-100" />
                                     <div className="grid grid-cols-2 gap-2">
                                         <button type="button" onClick={()=>{setPendingCouncil(null);setPasswordInput('');}} className="p-4 font-bold text-gray-400 hover:bg-gray-50 rounded-xl">취소</button>
@@ -417,7 +440,7 @@
                                 </select>
                             </div>
                             <div>
-                                <label className="text-xs font-bold text-gray-400 ml-1 block mb-1">팀 보안 코드 (선생님이 알려줍니다)</label>
+                                <label className="text-xs font-bold text-gray-400 ml-1 block mb-1">팀 보안 코드</label>
                                 <input type="password" value={passwordInput} onChange={e=>setPasswordInput(e.target.value)} placeholder="••••" className="w-full p-4 bg-gray-50 rounded-xl text-center text-xl border-2 border-gray-100" autoFocus />
                             </div>
                             <div className="grid grid-cols-2 gap-2 pt-4">
