@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>아동 인권 수호 작전 v3.0.0 (실시간 협상)</title>
+    <title>아동 인권 수호 작전 v3.0.1 (실시간 협상)</title>
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -141,8 +141,13 @@
 
             // --- 핵심 로직 ---
             const requestTransfer = (fromKey, toKey, type, amount) => {
-                const amt = parseInt(amount);
-                if (scores[fromKey][type] < amt) return alert("토큰이 부족합니다!");
+    // [추가] 같은 협의체 체크
+    if (fromKey === toKey) {
+        return alert("같은 협의체끼리는 토큰을 주고받을 수 없습니다!");
+    }
+
+    const amt = parseInt(amount);
+    if (scores[fromKey][type] < amt) return alert("토큰이 부족합니다!");
                 
                 const toName = councils.find(c => c.key === toKey).name;
                 const newReqRef = db.ref(`game/requests/${toKey}`).push();
@@ -178,7 +183,12 @@
             };
 
             const adminForceTransfer = (from, to, type, amt) => {
-                const amount = parseInt(amt);
+    // [추가] 같은 협의체 체크
+    if (from === to) {
+        return alert("같은 협의체 국가 간에는 전송이 불가합니다");
+    }
+
+    const amount = parseInt(amt);
                 const updates = {};
                 updates[`game/scores/${from}/${type}`] = Math.max(0, scores[from][type] - amount);
                 updates[`game/scores/${to}/${type}`] = scores[to][type] + amount;
