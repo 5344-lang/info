@@ -506,33 +506,47 @@
                         <h2 className="text-2xl font-black flex items-center gap-2 text-yellow-600"><Calculator /> 수동 제어 모드 (선생님 전용)</h2>
                         <p className="text-sm text-gray-400">학생 기기에서 전송이 안 될 때 직접 토큰을 이동할 수 있습니다.</p>
                         <div className="space-y-3">
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="space-y-2">
-                                    <label className="text-xs font-bold text-gray-400">보내는 팀</label>
-                                    <select value={af} onChange={e=>{setAf(e.target.value);setAfCountry("");}} className="w-full p-4 bg-slate-50 rounded-xl font-bold border-2 border-slate-100">
-                                        {councils.map(c=><option key={c.key} value={c.key}>{c.name}</option>)}
-                                    </select>
-                                    <select value={afCountry} onChange={e=>setAfCountry(e.target.value)} className="w-full p-4 bg-slate-50 rounded-xl font-bold border-2 border-slate-100">
-                                        <option value="">국가 선택</option>
-                                        {councils.find(c=>c.key===af)?.countries.map(ct=><option key={ct} value={ct}>{ct}</option>)}
-                                    </select>
-                                </div>
-                                <div className="space-y-2">
-                                    <label className="text-xs font-bold text-gray-400">받는 팀</label>
-                                    <select value={at} onChange={e=>{setAt(e.target.value);setAtCountry("");}} className="w-full p-4 bg-slate-50 rounded-xl font-bold border-2 border-slate-100">
-                                        {councils.map(c=><option key={c.key} value={c.key}>{c.name}</option>)}
-                                    </select>
-                                    <select value={atCountry} onChange={e=>setAtCountry(e.target.value)} className="w-full p-4 bg-slate-50 rounded-xl font-bold border-2 border-slate-100">
-                                        <option value="">국가 선택</option>
-                                        {councils.find(c=>c.key===at)?.countries.map(ct=><option key={ct} value={ct}>{ct}</option>)}
-                                    </select>
-                                </div>
-                            </div>
-                            <div className="grid grid-cols-2 gap-4">
-                                <select value={aty} onChange={e=>setAty(e.target.value)} className="p-4 bg-slate-50 rounded-xl font-bold border-2 border-slate-100">
-                                    <option value="red">🔴 위기아동</option><option value="green">🟢 복지기금</option><option value="blue">🔵 경제발전기금</option>
+                            <div className="space-y-2">
+                                <label className="text-xs font-bold text-gray-400">보내는 팀</label>
+                                <select value={af} onChange={e=>{setAf(e.target.value);setAfCountry("");setAa(0);}} className="w-full p-4 bg-slate-50 rounded-xl font-bold border-2 border-slate-100">
+                                    {councils.map(c=><option key={c.key} value={c.key}>{c.name}</option>)}
                                 </select>
-                                <input type="number" min="1" value={aa} onChange={e=>setAa(e.target.value)} className="p-4 bg-slate-50 rounded-xl font-bold text-center border-2 border-slate-100" />
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-xs font-bold text-gray-400">보내는 국가</label>
+                                <select value={afCountry} onChange={e=>setAfCountry(e.target.value)} className="w-full p-4 bg-slate-50 rounded-xl font-bold border-2 border-slate-100">
+                                    <option value="">국가 선택</option>
+                                    {councils.find(c=>c.key===af)?.countries.map(ct=><option key={ct} value={ct}>{ct}</option>)}
+                                </select>
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-xs font-bold text-gray-400">받는 팀</label>
+                                <select value={at} onChange={e=>{setAt(e.target.value);setAtCountry("");}} className="w-full p-4 bg-slate-50 rounded-xl font-bold border-2 border-slate-100">
+                                    {councils.map(c=><option key={c.key} value={c.key}>{c.name}</option>)}
+                                </select>
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-xs font-bold text-gray-400">받는 국가</label>
+                                <select value={atCountry} onChange={e=>setAtCountry(e.target.value)} className="w-full p-4 bg-slate-50 rounded-xl font-bold border-2 border-slate-100">
+                                    <option value="">국가 선택</option>
+                                    {councils.find(c=>c.key===at)?.countries.map(ct=><option key={ct} value={ct}>{ct}</option>)}
+                                </select>
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-xs font-bold text-gray-400">토큰 종류</label>
+                                <select value={aty} onChange={e=>{setAty(e.target.value);setAa(0);}} className="w-full p-4 bg-slate-50 rounded-xl font-bold border-2 border-slate-100">
+                                    <option value="red">🔴 위기아동</option>
+                                    <option value="green">🟢 복지기금</option>
+                                    <option value="blue">🔵 경제발전기금</option>
+                                </select>
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-xs font-bold text-gray-400">수량 (보유: {scores[af]?.[aty]??0}개)</label>
+                                <div className="flex items-center gap-3">
+                                    <button onClick={()=>setAa(v=>Math.max(0,v-1))} className="w-12 h-12 bg-slate-200 rounded-xl font-black text-xl flex items-center justify-center">−</button>
+                                    <span className="flex-1 text-center text-2xl font-black">{aa}</span>
+                                    <button onClick={()=>setAa(v=>Math.min(scores[af]?.[aty]??0,v+1))} className="w-12 h-12 bg-slate-200 rounded-xl font-black text-xl flex items-center justify-center">+</button>
+                                </div>
                             </div>
                             <button onClick={()=>adminManual(af,afCountry,at,atCountry,aty,aa)} className="w-full py-5 bg-slate-900 text-white rounded-2xl font-black text-lg">강제 전송 실행</button>
                         </div>
