@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>아동 인권 수호 작전 v2.0</title>
+    <title>아동 인권 수호 작전 v2.1</title>
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -40,10 +40,12 @@
             const [timerSeconds, setTimerSeconds] = useState(300);
             const [timerRunning, setTimerRunning] = useState(false);
             const [timerStarted, setTimerStarted] = useState(false);
+            
+            // 초기 점수 설정 (councils 데이터의 initialStatus와 동기화)
             const [scores, setScores] = useState({
-                c1: { red: 0, green: 0, blue: 0 },
-                c2: { red: 0, green: 0, blue: 0 },
-                c3: { red: 0, green: 0, blue: 0 }
+                c1: { red: 4, green: 9, blue: 0 },
+                c2: { red: 10, green: 1, blue: 0 },
+                c3: { red: 2, green: 4, blue: 6 }
             });
 
             useEffect(() => {
@@ -57,7 +59,7 @@
 
             const councils = [
                 {
-                    id: 1,
+                    id: 1, key: 'c1',
                     name: "제 1 협의체",
                     password: "0912",
                     title: "보호의 한계",
@@ -93,7 +95,7 @@
                     accent: "text-blue-600"
                 },
                 {
-                    id: 2,
+                    id: 2, key: 'c2',
                     name: "제 2 협의체",
                     password: "1101",
                     title: "비상 탈출",
@@ -130,7 +132,7 @@
                     accent: "text-red-600"
                 },
                 {
-                    id: 3,
+                    id: 3, key: 'c3',
                     name: "제 3 협의체",
                     password: "9070",
                     title: "세계의 강대국",
@@ -170,55 +172,13 @@
                     ],
                     theme: "border-emerald-500",
                     accent: "text-emerald-600"
-                },
-                {
-                    id: 6,
-                    name: "제 6 협의체 (샘플)",
-                    password: "9999",
-                    title: "샘플 작전: 테스트",
-                    countries: "국가 A, 국가 B, 국가 C",
-                    quote: "이것은 시스템 테스트를 위한 샘플 페이지입니다.",
-                    initialStatus: { red: 5, green: 5, blue: 0 },
-                    description: "모의 UN의 원활한 진행을 위해 생성된 테스트 그룹입니다. 여러분 협의체의 상황이 여기에 글로 나타납니다.",
-                    roles: [
-                        { country: "🅰️ 국가 A", role: "테스트 역할 1", job: "화면이 잘 보이는지 확인하세요" },
-                        { country: "🅱️ 국가 B", role: "테스트 역할 2", job: "토큰 개수가 맞는지 확인하세요" },
-                        { country: "🆎 국가 C", role: "테스트 역할 3", job: "미션 내용이 잘 보이는지 확인하세요" }
-                    ],
-                    missions: [
-                        { id: "T1", title: "데이터 검토", steps: [
-                            "화면의 🔴 코인 개수가 실제 코인과 일치하는지 확인하세요",
-                            "화면의 🟢 코인 개수도 확인하세요"
-                        ]},
-                        { id: "T2", title: "보안 유지", steps: [
-                            "비밀번호는 같은 협의체 팀원끼리만 공유하세요"
-                        ]},
-                        { id: "T3", title: "미션 확인", steps: [
-                            "미션 내용을 읽고 팀원들과 전략을 짜세요",
-                            "협상을 통해 목표를 달성하세요"
-                        ]}
-                    ],
-                    winConditions: [
-                        { text: "모든 코인의 합계를 15개 이상으로 유지하기", point: 1 },
-                        { text: "다른 협의체로부터 🟢 코인 2개 이상 획득하기", point: 2 },
-                        { text: "🔴 코인을 3개 이하로 줄이기", point: 2 }
-                    ],
-                    theme: "border-purple-500",
-                    accent: "text-purple-600"
                 }
             ];
 
             const handlePasswordSubmit = (e) => {
                 e.preventDefault();
-                if (passwordInput === "9998") {
-                    setActiveTab('score'); setPendingCouncil(null); setError(false); return;
-                }
-                if (passwordInput === "9997") {
-                    setActiveTab('public'); setPendingCouncil(null); setError(false); return;
-                }
-                if (passwordInput === "9999") {
-                    setActiveTab(6); setPendingCouncil(null); setError(false); return;
-                }
+                if (passwordInput === "9998") { setActiveTab('score'); setPendingCouncil(null); setError(false); return; }
+                if (passwordInput === "9997") { setActiveTab('public'); setPendingCouncil(null); setError(false); return; }
                 if (pendingCouncil && passwordInput === pendingCouncil.password) {
                     setActiveTab(pendingCouncil.id); setPendingCouncil(null); setError(false);
                 } else {
@@ -226,9 +186,17 @@
                 }
             };
 
-            const handleScoreChange = (council, color, value) => {
-                const val = parseInt(value) || 0;
-                setScores(prev => ({ ...prev, [council]: { ...prev[council], [color]: val } }));
+            const handleScoreChange = (councilKey, color, value) => {
+                const val = Math.max(0, parseInt(value) || 0);
+                setScores(prev => ({ ...prev, [councilKey]: { ...prev[councilKey], [color]: val } }));
+            };
+
+            // 증가/감소 함수 추가
+            const adjustScore = (councilKey, color, amount) => {
+                setScores(prev => ({
+                    ...prev,
+                    [councilKey]: { ...prev[councilKey], [color]: Math.max(0, prev[councilKey][color] + amount) }
+                }));
             };
 
             const c1EffectiveGreen = scores.c1.green + scores.c1.blue;
@@ -255,6 +223,26 @@
 
             const finalResults = calculateResults();
 
+            // 협상 현황판 컴포넌트 내부에 코인 조절 컨트롤러 추가
+            const CoinControl = ({ councilKey, color, bgColor, label }) => (
+                <div className="flex flex-col items-center bg-white p-3 rounded-2xl shadow-sm border border-gray-100 min-w-[100px]">
+                    <span className="text-xs font-bold text-gray-400 mb-2">{label}</span>
+                    <div className="flex items-center gap-2">
+                        <button 
+                            onClick={() => adjustScore(councilKey, color, -1)}
+                            className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center font-bold hover:bg-gray-200"
+                        >-</button>
+                        <div className={`w-12 h-12 ${bgColor} rounded-xl flex items-center justify-center text-white text-xl font-black shadow-inner`}>
+                            {scores[councilKey][color]}
+                        </div>
+                        <button 
+                            onClick={() => adjustScore(councilKey, color, 1)}
+                            className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center font-bold hover:bg-gray-200"
+                        >+</button>
+                    </div>
+                </div>
+            );
+
             const renderHome = () => (
                 <div className="flex flex-col items-center justify-center min-h-[90vh] text-center p-6">
                     <div className="bg-white p-8 md:p-12 rounded-3xl shadow-xl border border-gray-200 max-w-2xl w-full">
@@ -265,7 +253,7 @@
                             이 시스템은 각 협의체 외교관만 접근할 수 있는 비밀 정보를 담고 있습니다.<br/>소속된 협의체를 선택하고 보안 코드를 입력하십시오.
                         </p>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            {councils.filter(c => c.id !== 6).map((council) => (
+                            {councils.map((council) => (
                                 <button
                                     key={council.id}
                                     onClick={() => { setPendingCouncil(council); setPasswordInput(""); setError(false); }}
@@ -321,7 +309,7 @@
                 const timeUp = timerStarted && timerSeconds === 0;
                 const timerColor = timerSeconds <= 60 ? 'text-red-600' : timerSeconds <= 120 ? 'text-orange-500' : 'text-blue-600';
                 return (
-                    <div className="max-w-5xl mx-auto p-4 md:p-8">
+                    <div className="max-w-6xl mx-auto p-4 md:p-8">
                         <button onClick={() => setActiveTab(null)} className="mb-6 text-gray-400 hover:text-gray-800 flex items-center transition-colors font-medium text-base">← 메인 화면</button>
 
                         <div className="bg-white rounded-3xl shadow-xl border border-gray-200 p-8 mb-8 text-center">
@@ -340,7 +328,7 @@
                                     </div>
                                     {timeUp
                                         ? <p className="text-3xl font-black text-red-600 mb-6">시간 종료! 협상을 마무리하세요!</p>
-                                        : <p className="text-lg text-gray-400 mb-6">협상 시간이 남아 있어요</p>
+                                        : <p className="text-lg text-gray-400 mb-6">협상 진행 중...</p>
                                     }
                                     <div className="flex gap-4 justify-center flex-wrap">
                                         {!timeUp && (
@@ -362,25 +350,45 @@
                             )}
                         </div>
 
-                        <h2 className="text-2xl font-bold text-gray-800 mb-4">📊 협의체 현황판</h2>
+                        <div className="flex justify-between items-center mb-4">
+                            <h2 className="text-2xl font-bold text-gray-800">📊 실시간 협의체 현황 (수정 가능)</h2>
+                            <span className="text-xs text-gray-400 font-bold bg-gray-100 px-3 py-1 rounded-full underline decoration-dotted">숫자 옆 + - 버튼으로 조절하세요</span>
+                        </div>
+                        
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                            {councils.filter(c => c.id !== 6).map(council => (
+                            {councils.map(council => (
                                 <div key={council.id} className={`bg-white rounded-3xl shadow-lg border-t-8 ${council.theme} p-6`}>
                                     <h3 className={`text-xl font-black ${council.accent} mb-1`}>{council.name}</h3>
-                                    <p className="text-gray-400 text-sm mb-4">{council.countries}</p>
-                                    <div className="flex gap-3 justify-center flex-wrap">
-                                        <div className="text-center">
-                                            <div className="w-16 h-16 bg-red-500 rounded-xl flex items-center justify-center text-white text-2xl font-black shadow">{council.initialStatus.red}</div>
-                                            <p className="text-xs text-gray-500 mt-1 font-bold">위기 아동</p>
-                                        </div>
-                                        <div className="text-center">
-                                            <div className="w-16 h-16 bg-emerald-500 rounded-xl flex items-center justify-center text-white text-2xl font-black shadow">{council.initialStatus.green}</div>
-                                            <p className="text-xs text-gray-500 mt-1 font-bold">복지 예산</p>
-                                        </div>
-                                        {council.initialStatus.blue > 0 && (
-                                            <div className="text-center">
-                                                <div className="w-16 h-16 bg-blue-500 rounded-xl flex items-center justify-center text-white text-2xl font-black shadow">{council.initialStatus.blue}</div>
-                                                <p className="text-xs text-gray-500 mt-1 font-bold">경제 예산</p>
+                                    <p className="text-gray-400 text-sm mb-6">{council.countries}</p>
+                                    
+                                    <div className="space-y-4">
+                                        <CoinControl 
+                                            councilKey={council.key} 
+                                            color="red" 
+                                            bgColor="bg-red-500" 
+                                            label="위기 아동" 
+                                        />
+                                        <CoinControl 
+                                            councilKey={council.key} 
+                                            color="green" 
+                                            bgColor="bg-emerald-500" 
+                                            label="복지 예산" 
+                                        />
+                                        {(council.key === 'c3' || scores[council.key].blue > 0) && (
+                                            <CoinControl 
+                                                councilKey={council.key} 
+                                                color="blue" 
+                                                bgColor="bg-blue-500" 
+                                                label="경제 예산" 
+                                            />
+                                        )}
+                                    </div>
+                                    
+                                    {/* 특수 상태 표시 */}
+                                    <div className="mt-6 pt-4 border-t border-gray-50 space-y-2">
+                                        {council.key === 'c2' && (
+                                            <div className={`text-xs font-bold text-center py-2 rounded-lg ${isFacilityBuilt ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-gray-400'}`}>
+                                                시설 건설 진행: {c2EffectiveGreen}/10
                                             </div>
                                         )}
                                     </div>
@@ -400,7 +408,7 @@
                             <h2 className="text-3xl font-black text-gray-900 mt-4 mb-2 flex items-center gap-3">
                                 <Calculator className="text-yellow-500" size={32} /> 최종 점수 집계
                             </h2>
-                            <p className="text-gray-500 leading-relaxed text-base">각 협의체의 코인 현황을 입력하세요. 1·2 협의체는 파란색 토큰이 초록색 토큰과 동일하게 합산됩니다.</p>
+                            <p className="text-gray-500 leading-relaxed text-base">현황판에서 입력한 수치가 자동으로 반영됩니다.</p>
                         </div>
                         <div className="p-6 overflow-x-auto">
                             <table className="w-full text-left border-collapse">
@@ -414,55 +422,24 @@
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-100">
-                                    {['c1', 'c2', 'c3'].map((key, index) => (
-                                        <tr key={key}>
+                                    {councils.map((council) => (
+                                        <tr key={council.key}>
                                             <td className="py-6 px-4">
-                                                <div className="font-black text-gray-900 text-base">제 {index + 1} 협의체</div>
-                                                {key === 'c1' && (
+                                                <div className="font-black text-gray-900 text-base">{council.name}</div>
+                                                {council.key === 'c1' && (
                                                     <div className={`mt-2 flex items-center gap-2 text-xs font-bold ${isFacilityBuilt ? 'text-emerald-600' : 'text-gray-400'}`}>
                                                         <Construction size={12} /> {isFacilityBuilt ? '시설 건설 성공 ✓' : '시설 건설 대기 중'}
                                                     </div>
                                                 )}
-                                                {key === 'c2' && (
-                                                    <div className={`mt-2 text-xs font-bold px-2 py-1 rounded-lg inline-block ${isFacilityBuilt ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-gray-500'}`}>
-                                                        건설 예산(🟢+🔵): {c2EffectiveGreen}/10
-                                                    </div>
-                                                )}
                                             </td>
-                                            <td className="py-6 px-4"><input type="number" value={scores[key].red} onChange={(e) => handleScoreChange(key, 'red', e.target.value)} className="w-20 bg-gray-50 border border-gray-200 rounded-lg p-3 text-center text-gray-900 text-base focus:border-red-400 outline-none" /></td>
-                                            <td className="py-6 px-4"><input type="number" value={scores[key].green} onChange={(e) => handleScoreChange(key, 'green', e.target.value)} className="w-20 bg-gray-50 border border-gray-200 rounded-lg p-3 text-center text-gray-900 text-base focus:border-emerald-400 outline-none" /></td>
-                                            <td className="py-6 px-4"><input type="number" value={scores[key].blue} onChange={(e) => handleScoreChange(key, 'blue', e.target.value)} className="w-20 bg-gray-50 border border-gray-200 rounded-lg p-3 text-center text-gray-900 text-base focus:border-blue-400 outline-none" /></td>
-                                            <td className="py-6 px-4"><div className="text-3xl font-black text-gray-900">{finalResults[key]} <span className="text-sm text-gray-400">PT</span></div></td>
+                                            <td className="py-6 px-4"><input type="number" value={scores[council.key].red} onChange={(e) => handleScoreChange(council.key, 'red', e.target.value)} className="w-20 bg-gray-50 border border-gray-200 rounded-lg p-3 text-center text-gray-900 text-base focus:border-red-400 outline-none" /></td>
+                                            <td className="py-6 px-4"><input type="number" value={scores[council.key].green} onChange={(e) => handleScoreChange(council.key, 'green', e.target.value)} className="w-20 bg-gray-50 border border-gray-200 rounded-lg p-3 text-center text-gray-900 text-base focus:border-emerald-400 outline-none" /></td>
+                                            <td className="py-6 px-4"><input type="number" value={scores[council.key].blue} onChange={(e) => handleScoreChange(council.key, 'blue', e.target.value)} className="w-20 bg-gray-50 border border-gray-200 rounded-lg p-3 text-center text-gray-900 text-base focus:border-blue-400 outline-none" /></td>
+                                            <td className="py-6 px-4"><div className="text-3xl font-black text-gray-900">{finalResults[council.key]} <span className="text-sm text-gray-400">PT</span></div></td>
                                         </tr>
                                     ))}
                                 </tbody>
                             </table>
-                        </div>
-                        <div className="p-6 bg-gray-50 grid grid-cols-1 md:grid-cols-3 gap-6">
-                            <div className="bg-white p-4 rounded-xl border border-gray-200">
-                                <h4 className="text-blue-500 font-bold text-sm mb-3 flex items-center gap-2"><Info size={14}/> 1협의체 조건</h4>
-                                <ul className="text-sm text-gray-500 space-y-2">
-                                    <li className={scores.c1.red < scores.c2.red ? "text-emerald-600 font-bold" : ""}>- 위기아동 {scores.c1.red} &lt; 2협의체 {scores.c2.red} (+1)</li>
-                                    <li className={c1EffectiveGreen > scores.c1.red ? "text-emerald-600 font-bold" : ""}>- 복지합계({c1EffectiveGreen}) &gt; 위기아동 {scores.c1.red} (+1)</li>
-                                    <li className={isFacilityBuilt ? "text-emerald-600 font-bold" : ""}>- 아동보호시설(2협의체 🟢+🔵 합 10개 시) (+3)</li>
-                                </ul>
-                            </div>
-                            <div className="bg-white p-4 rounded-xl border border-gray-200">
-                                <h4 className="text-red-500 font-bold text-sm mb-3 flex items-center gap-2"><Info size={14}/> 2협의체 조건</h4>
-                                <ul className="text-sm text-gray-500 space-y-2">
-                                    <li className={scores.c2.red < 10 ? "text-emerald-600 font-bold" : ""}>- 위기아동 {scores.c2.red} &lt; 10개 (+1)</li>
-                                    <li className={c2EffectiveGreen > 1 ? "text-emerald-600 font-bold" : ""}>- 복지합계({c2EffectiveGreen}) 상승 (+1)</li>
-                                    <li className={c2EffectiveGreen > scores.c2.red ? "text-emerald-600 font-bold" : ""}>- 복지합계({c2EffectiveGreen}) &gt; 위기아동 {scores.c2.red} (+3)</li>
-                                </ul>
-                            </div>
-                            <div className="bg-white p-4 rounded-xl border border-gray-200">
-                                <h4 className="text-emerald-600 font-bold text-sm mb-3 flex items-center gap-2"><Info size={14}/> 3협의체 조건</h4>
-                                <ul className="text-sm text-gray-500 space-y-2">
-                                    <li className={scores.c3.red <= 2 ? "text-emerald-600 font-bold" : ""}>- 위기아동 {scores.c3.red}개 (0~2 유지) (+1)</li>
-                                    <li className={scores.c3.blue < 6 ? "text-red-500 font-bold" : "text-emerald-600 font-bold"}>- 경제예산 페널티: {Math.max(0, 6 - scores.c3.blue)}점 감점</li>
-                                    <li className={(scores.c3.green + scores.c3.blue) > (scores.c1.green + scores.c1.blue) && (scores.c3.green + scores.c3.blue) > (scores.c2.green + scores.c2.blue) ? "text-emerald-600 font-bold" : ""}>- 전체 코인 최다 보유 (+3)</li>
-                                </ul>
-                            </div>
                         </div>
                     </div>
                 </div>
@@ -488,23 +465,22 @@
 
                         <div className="p-8 bg-white flex flex-wrap gap-8 justify-around border-b border-gray-100">
                             <div className="text-center">
-                                <div className="w-20 h-20 bg-red-500 rounded-2xl flex items-center justify-center text-white text-3xl font-black mx-auto mb-3 shadow-lg shadow-red-200">{council.initialStatus.red}</div>
+                                <div className="w-20 h-20 bg-red-500 rounded-2xl flex items-center justify-center text-white text-3xl font-black mx-auto mb-3 shadow-lg shadow-red-200">{scores[council.key].red}</div>
                                 <p className="text-sm text-gray-500 font-bold">위기 아동 지수</p>
                             </div>
                             <div className="text-center">
-                                <div className="w-20 h-20 bg-emerald-500 rounded-2xl flex items-center justify-center text-white text-3xl font-black mx-auto mb-3 shadow-lg shadow-emerald-200">{council.initialStatus.green}</div>
+                                <div className="w-20 h-20 bg-emerald-500 rounded-2xl flex items-center justify-center text-white text-3xl font-black mx-auto mb-3 shadow-lg shadow-emerald-200">{scores[council.key].green}</div>
                                 <p className="text-sm text-gray-500 font-bold">아동 복지 예산</p>
                             </div>
-                            {council.initialStatus.blue > 0 && (
+                            { (council.key === 'c3' || scores[council.key].blue > 0) && (
                                 <div className="text-center">
-                                    <div className="w-20 h-20 bg-blue-500 rounded-2xl flex items-center justify-center text-white text-3xl font-black mx-auto mb-3 shadow-lg shadow-blue-200">{council.initialStatus.blue}</div>
+                                    <div className="w-20 h-20 bg-blue-500 rounded-2xl flex items-center justify-center text-white text-3xl font-black mx-auto mb-3 shadow-lg shadow-blue-200">{scores[council.key].blue}</div>
                                     <p className="text-sm text-gray-500 font-bold">경제 예산</p>
                                 </div>
                             )}
                         </div>
 
                         <div className="p-8 space-y-12">
-
                             <section>
                                 <div className="flex items-center gap-3 mb-5">
                                     <span className="text-yellow-500"><EyeOff size={24} /></span>
