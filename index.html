@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>아동 인권 수호 작전 v2.3 (실시간)</title>
+    <title>아동 인권 수호 작전 v2.4 (실시간)</title>
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -95,11 +95,12 @@
 
             const formatTime = (s) => `${Math.floor(s / 60)}:${(s % 60).toString().padStart(2, '0')}`;
 
+            // 모든 원본 텍스트 데이터 복구
             const councils = [
-                { id: 1, key: 'c1', name: "제 1 협의체", password: "0912", theme: "border-blue-500", accent: "text-blue-600", countries: "캐나다, 독일, 네덜란드, 스웨덴, 뉴질랜드", quote: "세상 모든 아이를 구하고 싶지만, 우리 아이들을 보살필 힘도 부족해지고 있습니다.", description: "여러분은 세계에서 아동을 가장 잘 보호하는 나라들이에요. 위기 아동들을 돕느라 복지 예산이 점점 줄어들고 있답니다.", roles: [], missions: [], winConditions: [] },
-                { id: 2, key: 'c2', name: "제 2 협의체", password: "1101", theme: "border-red-500", accent: "text-red-600", countries: "팔레스타인, 미얀마, 예멘, 우크라이나, 시리아, 아프가니스탄", quote: "생존을 위해서 나라를 떠나야만 합니다.", description: "여러분의 나라는 전쟁과 경제 위기로 인해 아동을 보호할 예산도, 시스템도 없어요.", roles: [], missions: [], winConditions: [] },
-                { id: 3, key: 'c3', name: "제 3 협의체", password: "9070", theme: "border-emerald-500", accent: "text-emerald-600", countries: "대한민국, 러시아, 미국, 프랑스", quote: "우리는 이미 우리의 역할을 하고 있습니다.", description: "여러분은 세계에서 가장 부유하고 강력한 나라들이에요. 스마트하게 거래하세요!", roles: [], missions: [], winConditions: [] },
-                { id: 6, key: 'c6', name: "제 6 협의체 (샘플)", password: "9999", theme: "border-purple-500", accent: "text-purple-600", countries: "국가 A, 국가 B, 국가 C", quote: "이것은 시스템 테스트를 위한 샘플 페이지입니다.", description: "테스트 그룹입니다.", roles: [], missions: [], winConditions: [] }
+                { id: 1, key: 'c1', name: "제 1 협의체", password: "0912", title: "보호의 한계", countries: "캐나다, 독일, 네덜란드, 스웨덴, 뉴질랜드", quote: "세상 모든 아이를 구하고 싶지만, 우리 아이들을 보살필 힘도 부족해지고 있습니다.", description: "여러분은 세계에서 아동을 가장 잘 보호하는 나라들이에요. 하지만 제 2 협의체에서 구조된 아동들이 여러분의 나라로 오고 있어요. 이 아동들을 돕느라 복지 예산이 점점 줄어들고 있답니다.", roles: [{ country: "🍁 캐나다", role: "수석 협상가", job: "제 3 협의체 대표에게 직접 찾아가 협상하세요" }, { country: "🇩🇪 독일", role: "재정 담당관", job: "우리 팀의 토큰을 관리하고 협상 결과를 기록하세요" }, { country: "🌷 네덜란드", role: "대변인", job: "협상 시간에 우리 팀 입장을 크게 발표하세요" }, { country: "🇸🇪 스웨덴", role: "전략가", job: "어떤 협의체와 먼저 협상할지 계획하고 팀을 이끄세요" }, { country: "🥝 뉴질랜드", role: "기록 담당", job: "협상에서 오가는 내용을 꼼꼼히 메모하세요" }], missions: [{ id: "M1", title: "책임 전가", steps: ["제 3 협의체 대표를 직접 찾아가세요", "\"위기 아동 보호 시설 건립 비용을 함께 내주세요\"라고 강하게 요구하세요", "제 3 협의체와 함께 초록색 토큰을 9개 모아서 제 2 협의체에게 전달하세요"] }, { id: "M2", title: "시스템 전수", steps: ["제 2 협의체 대표를 직접 찾아가세요", "\"위기 아동 숫자를 줄여달라\"고 협상하세요", "반드시 빨간 토큰을 1개 이상 받아오세요! (필수)"] }], winConditions: [{ text: "위기아동지수(🔴)가 제 2 협의체보다 적음", point: 1 }, { text: "보유한 아동복지예산(🟢)이 위기아동지수(🔴)보다 많음", point: 1 }, { text: "제 2 협의체가 '아동 보호 시설'을 건설함(예산 10개 달성)", point: 3 }], theme: "border-blue-500", accent: "text-blue-600" },
+                { id: 2, key: 'c2', name: "제 2 협의체", password: "1101", title: "비상 탈출", countries: "팔레스타인, 미얀마, 예멘, 우크라이나, 시리아, 아프가니스탄", quote: "생존을 위해서 나라를 떠나야만 합니다.", description: "여러분의 나라는 전쟁과 경제 위기로 인해 아동을 보호할 예산도, 시스템도 없어요. 국민들은 살아남기 위해 난민이 되어 나라를 떠나고 있어요.", roles: [{ country: "🇵🇸 팔레스타인", role: "협상가 A", job: "제 1 협의체를 찾아가 지원을 요청하세요" }, { country: "🇲🇲 미얀마", role: "협상가 B", job: "제 3 협의체를 찾아가 지원을 요청하세요" }, { country: "🇾🇪 예멘", role: "재정 담당관", job: "받은 토큰을 관리하고 합계를 계산하세요" }, { country: "🇺🇦 우크라이나", role: "대변인", job: "우리 팀의 어려운 상황을 다른 팀에게 알리세요" }, { country: "🇸🇾 시리아", role: "전략가", job: "누구에게 무엇을 요청할지 계획하세요" }, { country: "🇦🇫 아프가니스탄", role: "기록 담당", job: "협상 내용을 메모하고 정리하세요" }], missions: [{ id: "M1", title: "긴급 조치", steps: ["제 1 협의체 대표를 찾아가서 \"위기 아동을 받아달라\"고 강하게 요구하세요", "제 3 협의체 대표를 찾아가서 \"위기 아동을 받아달라\"고 강하게 요구하세요", "빨간 토큰을 최대한 많이 다른 협의체에게 넘기세요"] }, { id: "M2", title: "재정 지원", steps: ["제 1 협의체 대표에게 \"아동 보호 시설 건립 비용을 도와달라\"고 부탁하세요", "제 3 협의체 대표에게 \"아동 보호 시설 건립 비용을 도와달라\"고 부탁하세요", "초록색 토큰을 10개 이상 모으면 시설 건설 성공!"] }], winConditions: [{ text: "위기아동지수(🔴)가 기존(10개)보다 줄어들었음", point: 1 }, { text: "아동복지예산(🟢)이 상승했음", point: 1 }, { text: "보유한 아동복지예산(🟢)이 위기아동지수(🔴)보다 많음", point: 3 }], theme: "border-red-500", accent: "text-red-600" },
+                { id: 3, key: 'c3', name: "제 3 협의체", password: "9070", title: "세계의 강대국", countries: "대한민국, 러시아, 미국, 프랑스", quote: "우리는 이미 우리의 역할을 하고 있습니다.", description: "여러분은 세계에서 가장 부유하고 강력한 나라들이에요. 우리의 이익은 지키면서, 스마트하게 거래하세요!", roles: [{ country: "🇰🇷 대한민국", role: "수석 협상가", job: "제안서를 들고 먼저 다른 협의체를 찾아가세요." }, { country: "🇷🇺 러시아", role: "재정 담당관", job: "파란 토큰은 절대 주면 안 돼요. 대신 초록 토큰으로 협상 조건을 계산하세요" }, { country: "🇺🇸 미국", role: "대변인", job: "우리에게 유리한지 팀원들과 함께 판단하세요" }, { country: "🇫🇷 프랑스", role: "협상 전략가", job: "어떤 조건을 내걸어야 가장 유리한지 분석하세요" }], missions: [{ id: "M1", title: "전략적 중재", steps: ["제 1 협의체 대표를 먼저 찾아가세요", "\"우리가 초록 토큰 1개를 줄게요. 대신 제 2 협의체 위기 아동을 조금 더 받아주세요\"라고 제안하세요"] }, { id: "M2", title: "조건부 지원", steps: ["제 2 협의체 대표를 찾아가세요", "\"위기 아동을 우리한테 보내지 않겠다고 약속하면, 초록 토큰 1개를 드릴게요\"라고 제안하세요"] }, { id: "M3", title: "경제 예산 사수", steps: ["파란색 토큰 6개를 끝까지 지키세요!"] }], winConditions: [{ text: "위기아동지수(🔴)를 0~2개 사이로 유지하기", point: 1 }, { text: "경제예산(🔵)이 줄어들었다면 감점", point: -1 }, { text: "전체 협의체 중 가장 많은 코인 보유하기", point: 3 }], theme: "border-emerald-500", accent: "text-emerald-600" },
+                { id: 6, key: 'c6', name: "제 6 협의체 (샘플)", password: "9999", title: "샘플 작전: 테스트", countries: "국가 A, 국가 B, 국가 C", quote: "테스트용 페이지입니다.", description: "모의 UN 원활한 진행을 위한 샘플입니다.", roles: [{ country: "🅰️ 국가 A", role: "테스트", job: "화면 확인" }], missions: [{ id: "T1", title: "검토", steps: ["코인 개수 일치 확인"] }], winConditions: [{ text: "테스트 성공", point: 1 }], theme: "border-purple-500", accent: "text-purple-600" }
             ];
 
             const transferToken = (fromKey, toKey, type, amount) => {
@@ -132,27 +133,29 @@
             };
 
             const resetSession = () => {
-                if (window.confirm("수업을 종료하고 모든 데이터를 리셋하시겠습니까?")) {
+                if (window.confirm("모든 데이터를 리셋하시겠습니까?")) {
                     db.ref('game').set({ scores: initialScores, logs: null });
                     setTimerSeconds(300); setTimerRunning(false); setTimerStarted(false);
                     alert("리셋되었습니다.");
                 }
             };
 
+            // 점수 계산 로직
             const finalResults = (() => {
                 const results = { c1: 0, c2: 0, c3: 0 };
-                if (scores.c1.red < scores.c2.red) results.c1 += 1;
-                if ((scores.c1.green + scores.c1.blue) > scores.c1.red) results.c1 += 1;
-                if ((scores.c2.green + scores.c2.blue) >= 10) results.c1 += 3;
-                if (scores.c2.red < 10) results.c2 += 1;
-                if ((scores.c2.green + scores.c2.blue) > 1) results.c2 += 1;
-                if ((scores.c2.green + scores.c2.blue) > scores.c2.red) results.c2 += 3;
-                if (scores.c3.red >= 0 && scores.c3.red <= 2) results.c3 += 1;
-                results.c3 -= Math.max(0, 6 - scores.c3.blue);
+                const s = scores;
+                if (s.c1.red < s.c2.red) results.c1 += 1;
+                if ((s.c1.green + s.c1.blue) > s.c1.red) results.c1 += 1;
+                if ((s.c2.green + s.c2.blue) >= 10) results.c1 += 3;
+                if (s.c2.red < 10) results.c2 += 1;
+                if ((s.c2.green + s.c2.blue) > 1) results.c2 += 1;
+                if ((s.c2.green + s.c2.blue) > s.c2.red) results.c2 += 3;
+                if (s.c3.red >= 0 && s.c3.red <= 2) results.c3 += 1;
+                results.c3 -= Math.max(0, 6 - s.c3.blue);
                 return results;
             })();
 
-            // 수정: readOnly 프롭을 받아 버튼 노출 여부 결정
+            // readOnly prop에 따라 버튼 숨김 처리
             const CoinControl = ({ councilKey, color, bgColor, label, readOnly = false }) => (
                 <div className="flex flex-col items-center bg-white p-3 rounded-2xl shadow-sm border border-gray-100 min-w-[100px]">
                     <span className="text-[10px] font-bold text-gray-400 mb-2">{label}</span>
@@ -176,17 +179,17 @@
                     <div className="mt-8 p-6 bg-slate-900 text-white rounded-3xl shadow-xl">
                         <h3 className="text-lg font-black mb-4 flex items-center gap-2">🚀 토큰 전송 (외교 활동)</h3>
                         <div className="space-y-4 text-sm">
-                            <select value={to} onChange={(e)=>setTo(e.target.value)} className="w-full p-3 bg-slate-800 border-none rounded-xl font-bold outline-none">
+                            <select value={to} onChange={(e)=>setTo(e.target.value)} className="w-full p-3 bg-slate-800 border-none rounded-xl font-bold outline-none text-white">
                                 <option value="">받는 협의체 선택</option>
                                 {councils.filter(c => c.key !== councilKey && c.id !== 6).map(c => <option key={c.key} value={c.key}>{c.name}</option>)}
                             </select>
                             <div className="grid grid-cols-2 gap-2">
-                                <select value={type} onChange={(e)=>setType(e.target.value)} className="p-3 bg-slate-800 border-none rounded-xl font-bold outline-none">
+                                <select value={type} onChange={(e)=>setType(e.target.value)} className="p-3 bg-slate-800 border-none rounded-xl font-bold outline-none text-white">
                                     <option value="red">🔴 위기 아동</option>
                                     <option value="green">🟢 복지 예산</option>
                                     <option value="blue">🔵 경제 예산</option>
                                 </select>
-                                <input type="number" value={amt} onChange={(e)=>setAmt(e.target.value)} min="1" className="p-3 bg-slate-800 border-none rounded-xl text-center font-bold outline-none" />
+                                <input type="number" value={amt} onChange={(e)=>setAmt(e.target.value)} min="1" className="p-3 bg-slate-800 border-none rounded-xl text-center font-bold outline-none text-white" />
                             </div>
                             <button onClick={() => to ? transferToken(councilKey, to, type, amt) : alert("협의체를 선택하세요!")} className="w-full py-4 bg-blue-500 hover:bg-blue-600 rounded-xl font-black transition-all">전송 승인</button>
                         </div>
@@ -199,13 +202,12 @@
                     <div className="bg-white p-8 md:p-12 rounded-3xl shadow-xl border border-gray-200 max-w-2xl w-full">
                         <div className="flex justify-center mb-6 text-blue-500 animate-pulse"><Globe /></div>
                         <h1 className="text-4xl font-black text-gray-900 mb-4 tracking-tight">글로벌 아동 인권 수호 작전</h1>
-                        <div className="h-1 w-20 bg-blue-500 mx-auto mb-6 rounded-full"></div>
-                        <p className="text-gray-500 mb-10 text-lg leading-relaxed">이 시스템은 각 협의체 외교관만 접근할 수 있는 비밀 정보를 담고 있습니다.<br/>보안 코드를 입력하십시오.</p>
+                        <p className="text-gray-500 mb-10 text-lg">협의체를 선택하고 보안 코드를 입력하십시오.</p>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                             {councils.filter(c => c.id !== 6).map((council) => (
-                                <button key={council.id} onClick={() => { setPendingCouncil(council); setPasswordInput(""); setError(false); }} className="bg-gray-100 hover:bg-blue-50 text-gray-800 font-bold py-6 px-6 rounded-2xl transition-all border-b-4 border-gray-300 hover:border-blue-400 active:border-b-0 active:translate-y-1 flex flex-col items-center gap-2 group">
-                                    <div className="group-hover:scale-110 transition-transform text-gray-400 group-hover:text-blue-500"><Shield size={28} /></div>
-                                    <span className="text-base">{council.name}</span>
+                                <button key={council.id} onClick={() => { setPendingCouncil(council); setPasswordInput(""); setError(false); }} className="bg-gray-100 hover:bg-blue-50 text-gray-800 font-bold py-6 px-6 rounded-2xl transition-all border-b-4 border-gray-300 hover:border-blue-400 active:border-b-0 active:translate-y-1 flex flex-col items-center gap-2">
+                                    <Shield size={28} />
+                                    <span>{council.name}</span>
                                 </button>
                             ))}
                         </div>
@@ -215,49 +217,47 @@
 
             const renderPasswordScreen = () => (
                 <div className="flex flex-col items-center justify-center min-h-[90vh] p-6">
-                    <div className="bg-white p-8 rounded-3xl shadow-xl border border-gray-200 max-w-md w-full">
-                        <div className="flex justify-center mb-6"><div className="p-4 bg-yellow-50 rounded-full border border-yellow-200 text-yellow-500"><Lock size={32} /></div></div>
-                        <h2 className="text-2xl font-bold text-gray-900 text-center mb-2">보안 터미널 접속</h2>
-                        <p className="text-gray-500 text-center mb-8 text-base">4자리 기밀 보안 코드를 입력하십시오.</p>
+                    <div className="bg-white p-8 rounded-3xl shadow-xl border border-gray-200 max-w-md w-full text-center">
+                        <div className="flex justify-center mb-6"><div className="p-4 bg-yellow-50 rounded-full text-yellow-500"><Lock size={32} /></div></div>
+                        <h2 className="text-2xl font-bold mb-8">보안 터미널 접속</h2>
                         <form onSubmit={handlePasswordSubmit} className="space-y-6">
-                            <input type="password" value={passwordInput} onChange={(e) => setPasswordInput(e.target.value)} placeholder="••••" autoFocus className={`w-full bg-gray-50 border-2 ${error ? 'border-red-400' : 'border-gray-200'} rounded-xl py-4 text-center text-2xl tracking-[0.5em] focus:outline-none focus:border-blue-400 transition-colors`} />
+                            <input type="password" value={passwordInput} onChange={(e) => setPasswordInput(e.target.value)} placeholder="••••" autoFocus className={`w-full bg-gray-50 border-2 ${error ? 'border-red-400' : 'border-gray-200'} rounded-xl py-4 text-center text-2xl tracking-[0.5em] focus:outline-none focus:border-blue-400`} />
                             <div className="grid grid-cols-2 gap-4">
-                                <button type="button" onClick={() => setPendingCouncil(null)} className="py-4 rounded-xl font-bold text-gray-500 hover:bg-gray-100 transition-colors text-base">취소</button>
-                                <button type="submit" className="py-4 bg-blue-500 hover:bg-blue-600 text-white rounded-xl font-bold transition-all text-base">접속 승인</button>
+                                <button type="button" onClick={() => setPendingCouncil(null)} className="py-4 font-bold text-gray-500">취소</button>
+                                <button type="submit" className="py-4 bg-blue-500 text-white rounded-xl font-bold">접속 승인</button>
                             </div>
                         </form>
                     </div>
                 </div>
             );
 
-            // 수정: readOnly 모드일 때 버튼 및 리셋 기능 숨김
+            // readOnly일 때 타이머 조작 및 리셋 버튼 숨김
             const renderPublicBoard = (readOnly = false) => {
                 const timeUp = timerStarted && timerSeconds === 0;
                 return (
                     <div className="max-w-6xl mx-auto p-4 md:p-8 pb-20">
-                        <button onClick={() => setActiveTab(null)} className="mb-6 text-gray-400 hover:text-gray-800 flex items-center transition-colors font-medium text-base">← 메인 화면</button>
-                        <div className="bg-white rounded-3xl shadow-xl border border-gray-200 p-8 mb-8 text-center">
+                        <button onClick={() => setActiveTab(null)} className="mb-6 text-gray-400 flex items-center">← 메인 화면</button>
+                        <div className="bg-white rounded-3xl shadow-xl p-8 mb-8 text-center border">
                             <h2 className="text-2xl font-bold text-gray-700 mb-6">⏱ 협상 타이머</h2>
                             {!timerStarted ? (
-                                !readOnly && <button onClick={() => { setTimerSeconds(300); setTimerRunning(true); setTimerStarted(true); }} className="bg-blue-500 hover:bg-blue-600 text-white font-black text-2xl px-12 py-6 rounded-2xl shadow-lg">🚀 협상 시작 (5분)</button>
+                                !readOnly && <button onClick={() => { setTimerSeconds(300); setTimerRunning(true); setTimerStarted(true); }} className="bg-blue-500 text-white font-black text-2xl px-12 py-6 rounded-2xl shadow-lg">🚀 협상 시작 (5분)</button>
                             ) : (
                                 <div>
-                                    <div className={`text-8xl md:text-9xl font-black mb-4 tabular-nums leading-none ${timerSeconds <= 60 ? 'text-red-600' : 'text-blue-600'}`}>{timeUp ? '⏰' : formatTime(timerSeconds)}</div>
+                                    <div className={`text-8xl md:text-9xl font-black mb-4 tabular-nums ${timerSeconds <= 60 ? 'text-red-600' : 'text-blue-600'}`}>{timeUp ? '⏰' : formatTime(timerSeconds)}</div>
                                     {!readOnly && (
                                         <div className="flex gap-4 justify-center">
-                                            {!timeUp && <button onClick={() => setTimerRunning(r => !r)} className={`${timerRunning ? 'bg-yellow-400 text-yellow-900' : 'bg-green-500 text-white'} font-bold px-8 py-4 rounded-xl transition-all`}>{timerRunning ? '⏸ 일시정지' : '▶ 재개'}</button>}
-                                            <button onClick={() => { setTimerSeconds(300); setTimerRunning(false); setTimerStarted(false); }} className="bg-gray-100 px-8 py-4 rounded-xl transition-all">🔄 초기화</button>
+                                            {!timeUp && <button onClick={() => setTimerRunning(r => !r)} className="bg-gray-800 text-white font-bold px-8 py-4 rounded-xl">{timerRunning ? '⏸ 일시정지' : '▶ 재개'}</button>}
+                                            <button onClick={() => { setTimerSeconds(300); setTimerRunning(false); setTimerStarted(false); }} className="bg-gray-100 px-8 py-4 rounded-xl">🔄 초기화</button>
                                         </div>
                                     )}
                                 </div>
                             )}
                         </div>
-                        <h2 className="text-2xl font-bold text-gray-800 mb-4">📊 협의체 현황판</h2>
+                        <h2 className="text-2xl font-bold mb-4">📊 협의체 현황판 {readOnly && "(실시간 모니터링)"}</h2>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
                             {councils.filter(c => c.id !== 6).map(council => (
                                 <div key={council.id} className={`bg-white rounded-3xl shadow-lg border-t-8 ${council.theme} p-6`}>
-                                    <h3 className={`text-xl font-black ${council.accent} mb-1`}>{council.name}</h3>
-                                    <p className="text-gray-400 text-xs mb-4">{council.countries}</p>
+                                    <h3 className={`text-xl font-black ${council.accent} mb-4`}>{council.name}</h3>
                                     <div className="space-y-3">
                                         <CoinControl councilKey={council.key} color="red" bgColor="bg-red-500" label="위기 아동" readOnly={readOnly} />
                                         <CoinControl councilKey={council.key} color="green" bgColor="bg-emerald-500" label="복지 예산" readOnly={readOnly} />
@@ -266,10 +266,9 @@
                                 </div>
                             ))}
                         </div>
-                        
                         {!readOnly && (
-                            <div className="flex flex-col items-center border-t pt-10">
-                                <button onClick={resetSession} className="bg-red-500 hover:bg-red-600 text-white font-black py-5 px-12 rounded-2xl shadow-xl transition-all active:scale-95">[수업종료] 데이터 전체 리셋</button>
+                            <div className="flex justify-center border-t pt-10">
+                                <button onClick={resetSession} className="bg-red-500 text-white font-black py-5 px-12 rounded-2xl shadow-xl">[수업종료] 데이터 전체 리셋</button>
                             </div>
                         )}
                     </div>
@@ -278,23 +277,23 @@
 
             const renderScoreCalculator = () => (
                 <div className="max-w-5xl mx-auto p-4 md:p-8">
-                    <button onClick={() => setActiveTab(null)} className="mb-6 text-gray-400 hover:text-gray-800 flex items-center font-medium text-base">← 메인 화면</button>
-                    <div className="bg-white border-t-8 border-yellow-500 rounded-3xl shadow-xl overflow-hidden mb-8">
-                        <div className="bg-yellow-50 p-8 border-b border-gray-200">
+                    <button onClick={() => setActiveTab(null)} className="mb-6 text-gray-400">← 메인 화면</button>
+                    <div className="bg-white border-t-8 border-yellow-500 rounded-3xl shadow-xl overflow-hidden">
+                        <div className="bg-yellow-50 p-8 border-b">
                             <span className="bg-yellow-500 text-white text-sm font-black px-3 py-1 rounded-lg">관리자 전용</span>
-                            <h2 className="text-3xl font-black text-gray-900 mt-4 mb-2 flex items-center gap-3"><Calculator className="text-yellow-500" size={32} /> 최종 점수 집계</h2>
+                            <h2 className="text-3xl font-black mt-4 flex items-center gap-3"><Calculator className="text-yellow-500" size={32} /> 최종 점수 집계</h2>
                         </div>
-                        <div className="p-6 overflow-x-auto text-sm">
-                            <table className="w-full text-left border-collapse">
-                                <thead><tr className="border-b border-gray-200"><th className="py-4 px-4 text-gray-400 font-bold">협의체</th><th className="py-4 px-4 text-red-500 font-bold">🔴</th><th className="py-4 px-4 text-emerald-600 font-bold">🟢</th><th className="py-4 px-4 text-blue-500 font-bold">🔵</th><th className="py-4 px-4 text-yellow-600 font-bold">최종 점수</th></tr></thead>
-                                <tbody className="divide-y divide-gray-100">
+                        <div className="p-6 overflow-x-auto">
+                            <table className="w-full text-left">
+                                <thead><tr className="border-b"><th className="py-4 px-4 text-gray-400">협의체</th><th className="py-4 px-4 text-red-500">🔴</th><th className="py-4 px-4 text-emerald-600">🟢</th><th className="py-4 px-4 text-blue-500">🔵</th><th className="py-4 px-4 text-yellow-600">최종 점수</th></tr></thead>
+                                <tbody className="divide-y">
                                     {['c1', 'c2', 'c3'].map((key, i) => (
                                         <tr key={key}>
-                                            <td className="py-6 px-4 font-black text-base">제 {i+1} 협의체</td>
+                                            <td className="py-6 px-4 font-black">제 {i+1} 협의체</td>
                                             <td className="py-6 px-4 font-bold">{scores[key].red}</td>
                                             <td className="py-6 px-4 font-bold">{scores[key].green}</td>
                                             <td className="py-6 px-4 font-bold">{scores[key].blue}</td>
-                                            <td className="py-6 px-4 font-black text-2xl">{finalResults[key]} <span className="text-xs text-gray-400 uppercase">PT</span></td>
+                                            <td className="py-6 px-4 font-black text-2xl">{finalResults[key]} PT</td>
                                         </tr>
                                     ))}
                                 </tbody>
@@ -306,19 +305,40 @@
 
             const renderCouncilPage = (council) => (
                 <div className="max-w-4xl mx-auto p-4 md:p-8 pb-32">
-                    <button onClick={() => setActiveTab(null)} className="mb-6 text-gray-400 hover:text-gray-800 flex items-center font-medium text-base">← 메인 화면</button>
+                    <button onClick={() => setActiveTab(null)} className="mb-6 text-gray-400">← 메인 화면</button>
                     <div className={`bg-white border-t-8 ${council.theme} rounded-3xl shadow-xl overflow-hidden`}>
-                        <div className="bg-gray-50 p-8 border-b border-gray-200">
-                            <div className="flex items-center justify-between mb-4"><span className="bg-red-500 text-white text-sm font-black px-3 py-1 rounded-lg flex items-center gap-1"><Lock size={12} /> 비밀 자료</span></div>
-                            <h2 className="text-3xl font-black text-gray-900 mb-3">{council.name} 작전 지시서</h2>
-                            <p className="text-gray-500 text-base">{council.countries}</p>
+                        <div className="bg-gray-50 p-8 border-b">
+                            <div className="flex justify-between items-center mb-4"><span className="bg-red-500 text-white text-sm font-black px-3 py-1 rounded-lg">비밀 자료</span></div>
+                            <h2 className="text-3xl font-black mb-3">{council.name} 작전 지시서</h2>
+                            <p className="text-gray-500">{council.countries}</p>
                         </div>
                         <div className="p-8 bg-white grid grid-cols-3 gap-2 text-center border-b">
                             <div className="p-4 bg-red-50 rounded-2xl"><div className="text-3xl font-black text-red-500">{scores[council.key].red}</div><p className="text-[10px] text-gray-400 font-bold">위기 아동</p></div>
                             <div className="p-4 bg-emerald-50 rounded-2xl"><div className="text-3xl font-black text-emerald-500">{scores[council.key].green}</div><p className="text-[10px] text-gray-400 font-bold">복지 예산</p></div>
                             <div className="p-4 bg-blue-50 rounded-2xl"><div className="text-3xl font-black text-blue-500">{scores[council.key].blue}</div><p className="text-[10px] text-gray-400 font-bold">경제 예산</p></div>
                         </div>
-                        <div className="p-8"><TransferPanel councilKey={council.key} /></div>
+                        <div className="p-8">
+                            <TransferPanel councilKey={council.key} />
+                            <div className="mt-12 space-y-12">
+                                <section>
+                                    <h3 className="text-2xl font-bold mb-5 flex items-center gap-2 text-gray-800"><EyeOff size={24} className="text-yellow-500" /> 우리 팀 상황</h3>
+                                    <div className="bg-yellow-50 p-6 rounded-2xl border-l-4 border-yellow-400 italic text-gray-700 mb-4">"{council.quote}"</div>
+                                    <p className="text-gray-600">{council.description}</p>
+                                </section>
+                                <section>
+                                    <h3 className="text-2xl font-bold mb-5 flex items-center gap-2 text-gray-800"><Users size={24} className="text-purple-500" /> 팀원 역할 분담</h3>
+                                    <div className="grid gap-3">{council.roles.map((r, i) => (<div key={i} className="bg-purple-50 border border-purple-200 rounded-2xl p-4"><div className="font-bold text-gray-800">{r.country} ({r.role})</div><p className="text-sm text-gray-600">{r.job}</p></div>))}</div>
+                                </section>
+                                <section>
+                                    <h3 className="text-2xl font-bold mb-5 flex items-center gap-2 text-gray-800"><Shield size={24} className="text-blue-500" /> 우리 팀 미션</h3>
+                                    <div className="grid gap-5">{council.missions.map((m) => (<div key={m.id} className="bg-blue-50 border border-blue-200 rounded-2xl p-6"><div className="font-bold text-lg mb-4">{m.id}. {m.title}</div><ol className="space-y-2">{m.steps.map((s, idx) => (<li key={idx} className="text-gray-700 text-sm"> {idx+1}. {s}</li>))}</ol></div>))}</div>
+                                </section>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="mt-8">
+                        <h4 className="text-xs font-bold text-gray-400 mb-3 tracking-widest uppercase">실시간 활동 로그</h4>
+                        <div className="space-y-2">{logs.map((log, i) => (<div key={i} className="bg-white p-3 rounded-xl text-[11px] shadow-sm border flex justify-between"><span>{log.from} → {log.to} ({log.type==='red'?'🔴':log.type==='green'?'🟢':'🔵'} {log.amt}개)</span><span className="text-gray-300">{log.time}</span></div>))}</div>
                     </div>
                 </div>
             );
