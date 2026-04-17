@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>아동 인권 수호 작전 v3.9</title>
+    <title>아동 인권 수호 작전 v3.1.0</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌍</text></svg>">
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
@@ -110,35 +110,35 @@
                 theme: "border-emerald-500", accent: "text-emerald-600",
                 title: "세계의 강대국",
                 quote: "우리는 이미 우리의 역할을 하고 있습니다.",
-                description: "가장 부유하고 강력한 나라들입니다. 🔵 경제력 토큰을 지키면서 외교를 통해 이익을 극대화하세요. 🔴 위기아동 토큰을 너무 많이 받으면 점수가 깎입니다. 스마트하게 협상하는 것이 핵심입니다.",
+                description: "가장 부유하고 강력한 나라들입니다. 🔵 경제발전기금 토큰을 지키면서 외교를 통해 이익을 극대화하세요. 🔴 위기아동 토큰을 너무 많이 받으면 점수가 깎입니다. 스마트하게 협상하는 것이 핵심입니다.",
                 roles: [
                     { country: "대한민국", role: "수석 협상가", job: "다른 협의체에 우리 팀의 조건과 제안을 전달합니다." },
-                    { country: "러시아",   role: "재정 담당",   job: "🔵 경제력 토큰이 6개 아래로 내려가지 않도록 지킵니다." },
+                    { country: "러시아",   role: "재정 담당",   job: "🔵 경제발전기금 토큰이 6개 아래로 내려가지 않도록 지킵니다." },
                     { country: "미국",     role: "대변인",       job: "들어온 제안이 우리에게 유리한지 판단하고 팀에 알립니다." },
                     { country: "프랑스",   role: "전략가",       job: "어떤 요청을 수락하고 거절할지 전략을 세웁니다." }
                 ],
                 missions: [
                     { id: "M1", title: "전략적 중재",   steps: ["다른 팀으로부터 '🔴 위기아동 토큰을 보내지 않겠다'는 약속을 받아내세요."] },
-                    { id: "M2", title: "경제 예산 사수", steps: ["🔵 경제력 토큰을 8개 이상 유지하세요. 6개 아래로 내려가면 개수당 -1점이 됩니다."] },
+                    { id: "M2", title: "경제 예산 사수", steps: ["🔵 경제발전기금 토큰을 8개 이상 유지하세요. 6개 아래로 내려가면 개수당 -1점이 됩니다."] },
                     { id: "M3", title: "전략적 기여",   steps: ["🟢 복지기금 토큰을 다른 협의체에 최소 1회 이상 지원하세요. 강대국도 국제 아동인권 논의에 참여합니다."] }
                 ],
                 winConditions: [
                     { text: "🔴 위기아동 토큰을 0~2개로 유지", point: 1 },
-                    { text: "🔵 경제력 토큰 1개 잃을 때마다 -1점 (초기 6개 기준)", point: -1 },
+                    { text: "🔵 경제발전기금 토큰 1개 잃을 때마다 -1점 (초기 6개 기준)", point: -1 },
                     { text: "🟢 복지기금을 다른 협의체에 1회 이상 지원", point: 1 },
-                    { text: "🔵 경제력 토큰 8개 이상 유지", point: 3 }
+                    { text: "🔵 경제발전기금 토큰 8개 이상 유지", point: 3 }
                 ]
             }
         ];
 
         const tokenLabel = (type) =>
-            type === 'red' ? '🔴 위기아동' : type === 'green' ? '🟢 복지기금' : '🔵 경제력';
+            type === 'red' ? '🔴 위기아동' : type === 'green' ? '🟢 복지기금' : '🔵 경제발전기금';
 
         // ── App ───────────────────────────────────────────────────────
         const App = () => {
             // 모든 useState는 조건문 밖 최상단에 선언 (React Hooks 규칙)
-            const [user, setUser]                       = useState(null);
-            const [activeTab, setActiveTab]             = useState(null);
+            const [user, setUser]                       = useState(() => { try { const s = sessionStorage.getItem('mun_user'); return s ? JSON.parse(s) : null; } catch { return null; } });
+            const [activeTab, setActiveTab]             = useState(() => { try { const v = sessionStorage.getItem('mun_activeTab'); if (!v) return null; const n = parseInt(v); return !isNaN(n) ? n : v; } catch { return null; } });
             const [pendingCouncil, setPendingCouncil]   = useState(null);
             const [selectedCountry, setSelectedCountry] = useState("");
             const [passwordInput, setPasswordInput]     = useState("");
@@ -156,7 +156,7 @@
             const [tfCouncil, setTfCouncil] = useState("");
             const [tfCountry, setTfCountry] = useState("");
             const [tfType, setTfType]       = useState("red");
-            const [tfAmt, setTfAmt]         = useState(1);
+            const [tfAmt, setTfAmt]         = useState(0);
             // 관리자 수동 제어 (if 블록 안에 두면 Hooks 오류 → 최상단 선언)
             const [af, setAf]         = useState("c1");
             const [afCountry, setAfCountry] = useState("");
@@ -193,6 +193,7 @@
             const requestTransfer = () => {
                 if (user?.demo) return alert("📋 샘플 모드입니다.\n실제 전송은 팀 보안 코드로 접속하세요.");
                 if (!tfCouncil || !tfCountry) return alert("받는 협의체와 국가를 모두 선택해 주세요.");
+                if (tfAmt <= 0) return alert("수량은 1개 이상이어야 합니다.");
                 if (user.councilKey === tfCouncil) return alert("자신의 협의체에는 보낼 수 없습니다.");
                 const have = scores[user.councilKey]?.[tfType] ?? 0;
                 if (have < tfAmt) return alert(`토큰이 부족합니다. 현재 보유: ${have}개`);
@@ -256,6 +257,16 @@
                 if (f === 'c3' && type === 'green') db.ref('game/c3_welfare_given').set(true);
                 alert("수동 전송 완료");
             };
+
+            // ── Session Persistence ───────────────────────────────────
+            useEffect(() => {
+                if (user) sessionStorage.setItem('mun_user', JSON.stringify(user));
+                else sessionStorage.removeItem('mun_user');
+            }, [user]);
+            useEffect(() => {
+                if (activeTab) sessionStorage.setItem('mun_activeTab', activeTab);
+                else sessionStorage.removeItem('mun_activeTab');
+            }, [activeTab]);
 
             // ── Effects ───────────────────────────────────────────────
 
@@ -519,7 +530,7 @@
                             </div>
                             <div className="grid grid-cols-2 gap-4">
                                 <select value={aty} onChange={e=>setAty(e.target.value)} className="p-4 bg-slate-50 rounded-xl font-bold border-2 border-slate-100">
-                                    <option value="red">🔴 위기아동</option><option value="green">🟢 복지기금</option><option value="blue">🔵 경제력</option>
+                                    <option value="red">🔴 위기아동</option><option value="green">🟢 복지기금</option><option value="blue">🔵 경제발전기금</option>
                                 </select>
                                 <input type="number" min="1" value={aa} onChange={e=>setAa(e.target.value)} className="p-4 bg-slate-50 rounded-xl font-bold text-center border-2 border-slate-100" />
                             </div>
@@ -570,7 +581,7 @@
                                 <div className="space-y-3 font-black text-lg">
                                     <div className="flex justify-between p-4 bg-red-50 rounded-2xl text-red-600"><span>🔴 위기아동</span><span>{scores[c.key]?.red??'-'}</span></div>
                                     <div className="flex justify-between p-4 bg-emerald-50 rounded-2xl text-emerald-600"><span>🟢 복지기금</span><span>{scores[c.key]?.green??'-'}</span></div>
-                                    <div className="flex justify-between p-4 bg-blue-50 rounded-2xl text-blue-600"><span>🔵 경제력</span><span>{scores[c.key]?.blue??'-'}</span></div>
+                                    <div className="flex justify-between p-4 bg-blue-50 rounded-2xl text-blue-600"><span>🔵 경제발전기금</span><span>{scores[c.key]?.blue??'-'}</span></div>
                                 </div>
                             </div>
                         ))}
@@ -632,7 +643,7 @@
                             </div>
                             <div className="bg-blue-50 p-4 rounded-2xl text-blue-500">
                                 <div className="text-3xl">7</div>
-                                <div className="text-[11px] opacity-70 mt-1">🔵 경제력</div>
+                                <div className="text-[11px] opacity-70 mt-1">🔵 경제발전기금</div>
                             </div>
                         </div>
                     </div>
@@ -723,7 +734,7 @@
                             </div>
                             <div className="bg-blue-50 p-4 rounded-2xl text-blue-500">
                                 <div className="text-3xl">{scores[cur.key]?.blue??'-'}</div>
-                                <div className="text-[11px] opacity-70 mt-1">🔵 경제력</div>
+                                <div className="text-[11px] opacity-70 mt-1">🔵 경제발전기금</div>
                             </div>
                         </div>
 
@@ -751,18 +762,18 @@
                                     <div className="flex flex-col gap-3 font-black">
                                         <div>
                                             <label className="text-xs text-slate-400 mb-1 block">토큰 종류</label>
-                                            <select value={tfType} onChange={e=>{setTfType(e.target.value);setTfAmt(1);}} className="w-full p-4 bg-slate-800 rounded-xl border-none">
+                                            <select value={tfType} onChange={e=>{setTfType(e.target.value);setTfAmt(0);}} className="w-full p-4 bg-slate-800 rounded-xl border-none">
                                                 <option value="red">🔴 위기아동</option>
                                                 <option value="green">🟢 복지기금</option>
-                                                <option value="blue">🔵 경제력</option>
+                                                <option value="blue">🔵 경제발전기금</option>
                                             </select>
                                         </div>
                                         <div>
                                             <label className="text-xs text-slate-400 mb-1 block">수량 (보유: {scores[cur.key]?.[tfType]??0}개)</label>
                                             <div className="flex bg-slate-800 rounded-xl overflow-hidden h-[56px]">
-                                                <button onClick={()=>setTfAmt(Math.max(1,tfAmt-1))} className="px-5 bg-slate-700 font-black text-xl hover:bg-slate-600">-</button>
+                                                <button onClick={()=>setTfAmt(Math.max(0,tfAmt-1))} className="px-5 bg-slate-700 font-black text-xl hover:bg-slate-600">-</button>
                                                 <div className="flex-1 flex items-center justify-center text-lg">{tfAmt}</div>
-                                                <button onClick={()=>setTfAmt(Math.min(tfAmt+1, scores[cur.key]?.[tfType]??0))} className="px-5 bg-slate-700 font-black text-xl hover:bg-slate-600">+</button>
+                                                <button onClick={()=>{const max=scores[cur.key]?.[tfType]??0; if(tfAmt<max) setTfAmt(tfAmt+1);}} className="px-5 bg-slate-700 font-black text-xl hover:bg-slate-600">+</button>
                                             </div>
                                         </div>
                                     </div>
