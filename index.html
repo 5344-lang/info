@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>아동 인권 수호 작전 v3.1.1</title>
+    <title>아동 인권 수호 작전 v3.2.0</title>
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -112,12 +112,14 @@
                 ],
                 missions: [
                     { id: "M1", title: "전략적 중재",   steps: ["다른 팀으로부터 '🔴 위기아동 토큰을 보내지 않겠다'는 약속을 받아내세요."] },
-                    { id: "M2", title: "경제 예산 사수", steps: ["🔵 경제력 토큰을 6개 이상 유지하세요. 잃은 개수만큼 점수가 깎입니다."] }
+                    { id: "M2", title: "경제 예산 사수", steps: ["🔵 경제력 토큰을 8개 이상 유지하세요. 6개 아래로 내려가면 개수당 -1점이 됩니다."] },
+                    { id: "M3", title: "전략적 기여",   steps: ["🟢 복지기금 토큰을 다른 협의체에 최소 1회 이상 지원하세요. 강대국도 국제 아동인권 논의에 참여합니다."] }
                 ],
                 winConditions: [
                     { text: "🔴 위기아동 토큰을 0~2개로 유지", point: 1 },
                     { text: "🔵 경제력 토큰 1개 잃을 때마다 -1점 (초기 6개 기준)", point: -1 },
-                    { text: "우리 팀의 전체 토큰 합계가 세 팀 중 최대", point: 3 }
+                    { text: "🟢 복지기금을 다른 협의체에 1회 이상 지원", point: 1 },
+                    { text: "🔵 경제력 토큰 8개 이상 유지", point: 3 }
                 ]
             }
         ];
@@ -151,6 +153,8 @@
             const [at, setAt]   = useState("c2");
             const [aty, setAty] = useState("red");
             const [aa, setAa]   = useState(1);
+            const [c3WelfareGiven, setC3WelfareGiven] = useState(false);
+            const [sessionActive, setSessionActive]   = useState(null); // null = 로딩 중
 
             // ── 함수 ──────────────────────────────────────────────────
 
@@ -193,6 +197,8 @@
                     updates[`game/scores/${user.councilKey}/${type}`] = (scores[user.councilKey]?.[type] || 0) + parseInt(amt);
                     db.ref().update(updates);
                     db.ref('game/logs').push({ from: fromCountry, to: toCountry, type, amt, time: new Date().toLocaleTimeString() });
+                    // 제3협의체가 복지기금을 지원한 경우 기록
+                    if (fromKey === 'c3' && type === 'green') db.ref('game/c3_welfare_given').set(true);
                 }
                 db.ref(`game/requests/${user.councilKey}/${id}`).remove();
             };
@@ -200,9 +206,11 @@
             const resetGame = () => {
                 if (!window.confirm("수업을 종료하고 모든 데이터를 초기화합니다.\n점수, 로그, 요청이 모두 삭제됩니다. 계속할까요?")) return;
                 db.ref('game').set({
-                    scores: { c1:{red:4,green:9,blue:0}, c2:{red:10,green:1,blue:0}, c3:{red:2,green:4,blue:6} },
+                    scores: { c1:{red:3,green:10,blue:4}, c2:{red:12,green:1,blue:0}, c3:{red:1,green:2,blue:10} },
                     logs: null,
-                    requests: null
+                    requests: null,
+                    c3_welfare_given: false,
+                    session_active: false
                 });
                 setTimerSeconds(300); setTimerRunning(false); setTimerStarted(false);
                 alert("초기화 완료! 다음 수업을 시작할 수 있습니다.");
@@ -223,10 +231,17 @@
             useEffect(() => {
                 db.ref('game/scores').on('value', snap => {
                     if (snap.val()) setScores(snap.val());
-                    else db.ref('game/scores').set({ c1:{red:4,green:9,blue:0}, c2:{red:10,green:1,blue:0}, c3:{red:2,green:4,blue:6} });
+                    else db.ref('game/scores').set({ c1:{red:3,green:10,blue:4}, c2:{red:12,green:1,blue:0}, c3:{red:1,green:2,blue:10} });
                 });
                 db.ref('game/logs').on('value', snap => snap.val() && setLogs(Object.values(snap.val()).reverse().slice(0,5)));
-                return () => { db.ref('game/scores').off(); db.ref('game/logs').off(); };
+                db.ref('game/c3_welfare_given').on('value', snap => setC3WelfareGiven(!!snap.val()));
+                db.ref('game/session_active').on('value', snap => setSessionActive(!!snap.val()));
+                return () => {
+                    db.ref('game/scores').off();
+                    db.ref('game/logs').off();
+                    db.ref('game/c3_welfare_given').off();
+                    db.ref('game/session_active').off();
+                };
             }, []);
 
             useEffect(() => {
@@ -301,11 +316,71 @@
                 if ((scores.c2.green||0) > (scores.c2.red||0)) r.c2 += 3;
                 if ((scores.c3.red||0) <= 2) r.c3 += 1;
                 r.c3 -= Math.max(0, 6-(scores.c3.blue||0));
-                if (c3T > c1T && c3T > c2T) r.c3 += 3;
+                if (c3WelfareGiven) r.c3 += 1;
+                if ((scores.c3.blue||0) >= 8) r.c3 += 3;
                 return r;
             };
 
             // ── 화면 분기 ─────────────────────────────────────────────
+
+            // 로딩 중
+            if (sessionActive === null) return (
+                <div className="flex items-center justify-center min-h-screen bg-slate-50">
+                    <div className="text-gray-300 text-4xl animate-pulse">⏳</div>
+                </div>
+            );
+
+            // 세션 비활성 — 9997(공개 현황판) 접속은 허용, 나머지는 대기 화면
+            if (!sessionActive && activeTab !== 'public') return (
+                <div className="flex flex-col items-center justify-center min-h-screen text-center p-6 bg-slate-900">
+                    <div className="max-w-md w-full">
+                        <div className="text-6xl mb-8 animate-pulse">🌍</div>
+                        <h1 className="text-3xl font-black text-white mb-3">글로벌 아동 인권 수호 작전</h1>
+                        <p className="text-slate-400 mb-12 text-base leading-relaxed">
+                            수업이 시작되면 자동으로 연결됩니다.<br/>선생님의 안내를 기다려 주세요.
+                        </p>
+                        <div className="flex items-center justify-center gap-3 text-slate-600 text-sm">
+                            <div className="w-2 h-2 bg-slate-600 rounded-full animate-bounce" style={{animationDelay:'0ms'}}></div>
+                            <div className="w-2 h-2 bg-slate-600 rounded-full animate-bounce" style={{animationDelay:'150ms'}}></div>
+                            <div className="w-2 h-2 bg-slate-600 rounded-full animate-bounce" style={{animationDelay:'300ms'}}></div>
+                        </div>
+                        <button
+                            onClick={()=>setPendingCouncil({key:'__admin__', name:'관리자', countries:[''], password:''})}
+                            className="mt-16 text-slate-700 text-xs hover:text-slate-400 transition-colors"
+                        >선생님 접속</button>
+                    </div>
+                    {/* 선생님 비번 입력 팝업 */}
+                    {pendingCouncil?.key === '__admin__' && (
+                        <div className="fixed inset-0 modal-overlay flex items-center justify-center z-50 p-6">
+                            <div className="bg-white rounded-3xl shadow-2xl p-10 max-w-sm w-full popup-in text-center">
+                                <div className="text-4xl mb-4">🔑</div>
+                                <h2 className="text-xl font-black mb-6">선생님 확인</h2>
+                                <form onSubmit={(e)=>{
+                                    e.preventDefault();
+                                    if (passwordInput === '9997') {
+                                        db.ref('game/session_active').set(true);
+                                        setActiveTab('public');
+                                    } else if (passwordInput === '9998') {
+                                        db.ref('game/session_active').set(true);
+                                        setActiveTab('admin');
+                                    } else {
+                                        alert('선생님 코드가 아닙니다.');
+                                    }
+                                    setPasswordInput(''); setPendingCouncil(null);
+                                }} className="space-y-4">
+                                    <input type="password" value={passwordInput} onChange={e=>setPasswordInput(e.target.value)}
+                                        placeholder="선생님 코드 입력" autoFocus
+                                        className="w-full p-4 bg-gray-50 rounded-xl text-center text-xl border-2 border-gray-100" />
+                                    <div className="grid grid-cols-2 gap-2">
+                                        <button type="button" onClick={()=>{setPendingCouncil(null);setPasswordInput('');}} className="p-4 font-bold text-gray-400 hover:bg-gray-50 rounded-xl">취소</button>
+                                        <button type="submit" className="p-4 bg-blue-500 text-white rounded-xl font-bold">확인</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
 
             if (!user && !activeTab && !pendingCouncil) return (
                 <div className="flex flex-col items-center justify-center min-h-screen text-center p-6 bg-slate-50">
@@ -425,6 +500,11 @@
                         ))}
                     </div>
                     <div className="flex justify-center gap-4 flex-wrap">
+                        {!sessionActive && (
+                            <button onClick={()=>db.ref('game/session_active').set(true)} className="px-12 py-5 bg-green-500 text-white rounded-2xl font-black text-xl shadow-2xl hover:bg-green-600">
+                                🟢 수업 시작 (학생 접속 허용)
+                            </button>
+                        )}
                         <button onClick={()=>setShowScoreModal(true)} className="px-12 py-5 bg-slate-900 text-white rounded-2xl font-black text-xl shadow-2xl">📊 최종 결과 집계</button>
                         <button onClick={resetGame} className="px-12 py-5 bg-red-500 text-white rounded-2xl font-black text-xl shadow-2xl hover:bg-red-600">🔄 수업 종료 &amp; 초기화</button>
                     </div>
