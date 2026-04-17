@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>아동 인권 수호 작전 v3.3</title>
+    <title>아동 인권 수호 작전 v3.4</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌍</text></svg>">
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
@@ -152,6 +152,7 @@
             const [incomingRequest, setIncomingRequest] = useState(null);
             const [sentRequest, setSentRequest]         = useState(null);
             const [popupTimer, setPopupTimer]           = useState(20);
+            const [confirmMsg, setConfirmMsg]           = useState(null);
             const [tfCouncil, setTfCouncil] = useState("");
             const [tfCountry, setTfCountry] = useState("");
             const [tfType, setTfType]       = useState("red");
@@ -199,22 +200,34 @@
                 const newRef = db.ref(`game/requests/${tfCouncil}`).push();
                 newRef.set({ fromKey: user.councilKey, fromCountry: user.country, type: tfType, amt: tfAmt, toCountry: tfCountry });
                 setSentRequest({ id: newRef.key, toKey: tfCouncil, toName });
-                newRef.on('value', snap => { if (!snap.exists()) { setSentRequest(null); newRef.off(); } });
+                newRef.on('value', snap => {
+                    if (!snap.exists()) { setSentRequest(null); newRef.off(); }
+                    else if (snap.val()?.result) {
+                        const r = snap.val().result;
+                        setSentRequest(null);
+                        setConfirmMsg(r === 'accepted' ? '보냈습니다! ✅' : '거절되었습니다. ❌');
+                        newRef.off();
+                    }
+                });
             };
 
             const handleAction = (isAccept) => {
                 if (!incomingRequest) return;
                 const { id, fromKey, fromCountry, type, amt, toCountry } = incomingRequest;
+                const reqRef = db.ref(`game/requests/${user.councilKey}/${id}`);
                 if (isAccept) {
                     const updates = {};
                     updates[`game/scores/${fromKey}/${type}`]         = Math.max(0, (scores[fromKey]?.[type] || 0) - parseInt(amt));
                     updates[`game/scores/${user.councilKey}/${type}`] = (scores[user.councilKey]?.[type] || 0) + parseInt(amt);
                     db.ref().update(updates);
                     db.ref('game/logs').push({ from: fromCountry, to: toCountry, type, amt, time: new Date().toLocaleTimeString() });
-                    // 제3협의체가 복지기금을 지원한 경우 기록
                     if (fromKey === 'c3' && type === 'green') db.ref('game/c3_welfare_given').set(true);
                 }
-                db.ref(`game/requests/${user.councilKey}/${id}`).remove();
+                // result 기록 후 2초 뒤 삭제 (송신자가 result를 읽을 시간 확보)
+                reqRef.update({ result: isAccept ? 'accepted' : 'rejected' })
+                    .then(() => setTimeout(() => reqRef.remove(), 2000));
+                setIncomingRequest(null);
+                setConfirmMsg(isAccept ? '받았습니다! ✅' : '거절하였습니다. ❌');
             };
 
             const resetGame = () => {
@@ -296,13 +309,20 @@
             }, [incomingRequest, sentRequest]);
 
             useEffect(() => {
+                if (!confirmMsg) return;
+                const t = setTimeout(() => setConfirmMsg(null), 2500);
+                return () => clearTimeout(t);
+            }, [confirmMsg]);
+
+            useEffect(() => {
                 if (!user) return;
                 const reqRef = db.ref(`game/requests/${user.councilKey}`);
                 reqRef.on('value', snap => {
                     const data = snap.val();
                     if (data) {
-                        const firstKey = Object.keys(data)[0]; // 수정: [0] 없으면 배열 전체가 key로 잘못 전달됨
-                        setIncomingRequest({ id: firstKey, ...data[firstKey] });
+                        const firstKey = Object.keys(data).find(k => !data[k].result);
+                        if (firstKey) setIncomingRequest({ id: firstKey, ...data[firstKey] });
+                        else setIncomingRequest(null);
                     } else {
                         setIncomingRequest(null);
                     }
@@ -835,10 +855,8 @@
 
                     {sentRequest && (
                         <div className="fixed inset-0 modal-overlay flex items-center justify-center z-50 p-6 text-center">
-                            <div className="bg-white rounded-[40px] shadow-2xl p-10 max-w-sm w-full popup-in font-black">
-                                <div className="w-20 h-20 border-8 border-blue-500 border-t-slate-100 rounded-full animate-spin mx-auto mb-6 flex items-center justify-center">
-                                    <span className="animate-none text-xl text-blue-500">{popupTimer}</span>
-                                </div>
+                            <div className="bg-white rounded-[40px] shadow-2xl p-10 max-w-sm w-full popup-in">
+                                <div className="w-20 h-20 bg-blue-50 text-blue-500 rounded-full flex items-center justify-center mx-auto mb-6 text-3xl font-black shadow-inner border border-blue-100">{popupTimer}</div>
                                 <h2 className="text-2xl font-black mb-4">응답 대기 중...</h2>
                                 <div className="bg-slate-50 p-6 rounded-3xl text-sm text-slate-500 leading-relaxed mb-8 border border-slate-100">
                                     <p className="text-slate-800 mb-2 font-black italic underline underline-offset-4">💡 확인 사항</p>
@@ -848,6 +866,16 @@
                                 <button onClick={()=>{db.ref(`game/requests/${sentRequest.toKey}/${sentRequest.id}`).remove();setSentRequest(null);}} className="text-slate-300 font-bold hover:text-red-400">
                                     전송 요청 취소
                                 </button>
+                            </div>
+                        </div>
+                    )}
+
+                    {confirmMsg && (
+                        <div className="fixed inset-0 modal-overlay flex items-center justify-center z-50 p-6 text-center" onClick={()=>setConfirmMsg(null)}>
+                            <div className="bg-white rounded-[40px] shadow-2xl p-10 max-w-xs w-full popup-in">
+                                <div className="text-6xl mb-6">{confirmMsg.includes('✅') ? '✅' : '❌'}</div>
+                                <h2 className="text-2xl font-black">{confirmMsg.replace(' ✅','').replace(' ❌','')}</h2>
+                                <p className="text-slate-400 text-sm mt-3">화면을 터치하면 닫힙니다</p>
                             </div>
                         </div>
                     )}
