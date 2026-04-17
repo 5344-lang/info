@@ -684,28 +684,42 @@
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                                             <div>
                                                 <label className="text-xs text-slate-400 mb-1 block">받는 협의체</label>
-                                                <div className="w-full p-4 bg-slate-800 rounded-xl font-bold text-slate-300">제 1 협의체 (예시)</div>
+                                                <select value={tfCouncil} onChange={e=>{setTfCouncil(e.target.value);setTfCountry("");}} className="w-full p-4 bg-slate-800 rounded-xl font-bold border-none">
+                                                    <option value="">협의체 선택</option>
+                                                    {councils.map(c=><option key={c.key} value={c.key}>{c.name}</option>)}
+                                                </select>
                                             </div>
                                             <div>
                                                 <label className="text-xs text-slate-400 mb-1 block">받는 국가 (담당자)</label>
-                                                <div className="w-full p-4 bg-slate-800 rounded-xl font-bold text-slate-300">캐나다 (예시)</div>
+                                                <select value={tfCountry} onChange={e=>setTfCountry(e.target.value)} className="w-full p-4 bg-slate-800 rounded-xl font-bold border-none" disabled={!tfCouncil}>
+                                                    <option value="">{tfCouncil ? "국가 선택" : "협의체를 먼저 선택"}</option>
+                                                    {targetCouncilData?.countries.map(ct=><option key={ct} value={ct}>{ct}</option>)}
+                                                </select>
                                             </div>
                                         </div>
                                         <div className="flex flex-col gap-3 font-black">
                                             <div>
                                                 <label className="text-xs text-slate-400 mb-1 block">토큰 종류</label>
-                                                <div className="w-full p-4 bg-slate-800 rounded-xl text-slate-300">🟢 복지기금</div>
+                                                <select value={tfType} onChange={e=>{setTfType(e.target.value);setTfAmt(0);}} className="w-full p-4 bg-slate-800 rounded-xl border-none">
+                                                    <option value="red">🔴 위기아동</option>
+                                                    <option value="green">🟢 복지기금</option>
+                                                    <option value="blue">🔵 경제발전기금</option>
+                                                </select>
                                             </div>
                                             <div>
-                                                <label className="text-xs text-slate-400 mb-1 block">수량 (보유: {demo.tokens.green}개)</label>
+                                                <label className="text-xs text-slate-400 mb-1 block">수량 (보유: {demo.tokens[tfType]}개)</label>
                                                 <div className="flex bg-slate-800 rounded-xl overflow-hidden h-[56px]">
-                                                    <button onClick={()=>alert("📋 샘플 모드입니다.")} className="px-5 bg-slate-700 font-black text-xl hover:bg-slate-600">-</button>
-                                                    <div className="flex-1 flex items-center justify-center text-lg">2</div>
-                                                    <button onClick={()=>alert("📋 샘플 모드입니다.")} className="px-5 bg-slate-700 font-black text-xl hover:bg-slate-600">+</button>
+                                                    <button onClick={()=>setTfAmt(Math.max(0,tfAmt-1))} className="px-5 bg-slate-700 font-black text-xl hover:bg-slate-600">-</button>
+                                                    <div className="flex-1 flex items-center justify-center text-lg">{tfAmt}</div>
+                                                    <button onClick={()=>{if(tfAmt<demo.tokens[tfType])setTfAmt(tfAmt+1);}} className="px-5 bg-slate-700 font-black text-xl hover:bg-slate-600">+</button>
                                                 </div>
                                             </div>
                                         </div>
-                                        <button onClick={()=>alert("📋 샘플 모드입니다.\n실제 전송은 팀 보안 코드로 접속하세요.")} className="w-full py-5 bg-blue-500 rounded-xl font-black text-lg shadow-lg active:scale-95 transition-all">
+                                        <button onClick={()=>{
+                                            if(!tfCouncil||!tfCountry) return alert("받는 협의체와 국가를 모두 선택해 주세요.");
+                                            if(tfAmt<=0) return alert("수량은 1개 이상이어야 합니다.");
+                                            setSentRequest({id:'demo',toKey:tfCouncil,toName:tfCountry,fromCountry:'샘플국 A',toCountry:tfCountry,type:tfType,amt:tfAmt});
+                                        }} className="w-full py-5 bg-blue-500 rounded-xl font-black text-lg shadow-lg active:scale-95 transition-all">
                                             전송 요청 보내기 →
                                         </button>
                                     </div>
@@ -771,6 +785,23 @@
                             </div>
                         </div>
                     </div>
+                    {sentRequest && (
+                        <div className="fixed inset-0 modal-overlay flex items-center justify-center z-50 p-6 text-center">
+                            <div className="bg-white rounded-[40px] shadow-2xl p-10 max-w-sm w-full popup-in">
+                                <div className="w-20 h-20 bg-blue-50 text-blue-500 rounded-full flex items-center justify-center mx-auto mb-6 text-3xl font-black shadow-inner border border-blue-100">{popupTimer}</div>
+                                <h2 className="text-2xl font-black mb-2">외교 요청 전송 중!</h2>
+                                <p className="mb-2 text-slate-500 font-bold">
+                                    우리 국가가 <span className="text-blue-600">{sentRequest.toCountry}</span>에게
+                                </p>
+                                <p className="mb-8 text-xl font-black">{tokenLabel(sentRequest.type)} {sentRequest.amt}개를 보냅니다.</p>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <button onClick={()=>setSentRequest(null)} className="py-5 bg-slate-100 rounded-3xl font-black text-slate-400">취소</button>
+                                    <div className="py-5 bg-blue-50 rounded-3xl font-black text-blue-300 text-sm flex items-center justify-center">응답 대기 중...</div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </div>
                 );
             }
 
