@@ -63,7 +63,32 @@
             const [timerStarted, setTimerStarted] = useState(false);
             const [logs, setLogs] = useState([]);
             const [showScoreModal, setShowScoreModal] = useState(false);
+// --- 8비트 알람 사운드 함수 ---
+const playAlarmSound = () => {
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    
+    const playBeep = (startTime, frequency) => {
+        const oscillator = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
 
+        oscillator.type = 'square'; // 8비트 특유의 거친 사각파 소리
+        oscillator.frequency.setValueAtTime(frequency, startTime);
+
+        gainNode.gain.setValueAtTime(0.1, startTime); // 볼륨 조절
+        gainNode.gain.exponentialRampToValueAtTime(0.01, startTime + 0.2);
+
+        oscillator.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+
+        oscillator.start(startTime);
+        oscillator.stop(startTime + 0.2);
+    };
+
+    // 0.3초 간격으로 '삐-삐-삐' 세 번 울림
+    playBeep(audioCtx.currentTime, 880);
+    playBeep(audioCtx.currentTime + 0.3, 880);
+    playBeep(audioCtx.currentTime + 0.6, 880);
+};
             const initialScores = {
                 c1: { red: 4, green: 9, blue: 0 },
                 c2: { red: 10, green: 1, blue: 0 },
@@ -96,7 +121,13 @@
                 const id = setInterval(() => setTimerSeconds(s => s - 1), 1000);
                 return () => clearInterval(id);
             }, [timerRunning, timerSeconds]);
-
+// 타이머가 0이 되었을 때 사운드 실행
+useEffect(() => {
+    if (timerStarted && timerSeconds === 0) {
+        playAlarmSound();
+        setTimerRunning(false); // 타이머 정지
+    }
+}, [timerSeconds, timerStarted]);
             const formatTime = (s) => `${Math.floor(s / 60)}:${(s % 60).toString().padStart(2, '0')}`;
 
             const councils = [
