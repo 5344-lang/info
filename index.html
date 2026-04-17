@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>아동 인권 수호 작전 v3.4</title>
+    <title>아동 인권 수호 작전 v3.1.0</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌍</text></svg>">
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
@@ -199,7 +199,7 @@
                 const toName = `${tfCountry} (${councils.find(c => c.key === tfCouncil).name})`;
                 const newRef = db.ref(`game/requests/${tfCouncil}`).push();
                 newRef.set({ fromKey: user.councilKey, fromCountry: user.country, type: tfType, amt: tfAmt, toCountry: tfCountry });
-                setSentRequest({ id: newRef.key, toKey: tfCouncil, toName });
+                setSentRequest({ id: newRef.key, toKey: tfCouncil, toName, fromCountry: user.country, toCountry: tfCountry, type: tfType, amt: tfAmt });
                 newRef.on('value', snap => {
                     if (!snap.exists()) { setSentRequest(null); newRef.off(); }
                     else if (snap.val()?.result) {
@@ -857,15 +857,15 @@
                         <div className="fixed inset-0 modal-overlay flex items-center justify-center z-50 p-6 text-center">
                             <div className="bg-white rounded-[40px] shadow-2xl p-10 max-w-sm w-full popup-in">
                                 <div className="w-20 h-20 bg-blue-50 text-blue-500 rounded-full flex items-center justify-center mx-auto mb-6 text-3xl font-black shadow-inner border border-blue-100">{popupTimer}</div>
-                                <h2 className="text-2xl font-black mb-4">응답 대기 중...</h2>
-                                <div className="bg-slate-50 p-6 rounded-3xl text-sm text-slate-500 leading-relaxed mb-8 border border-slate-100">
-                                    <p className="text-slate-800 mb-2 font-black italic underline underline-offset-4">💡 확인 사항</p>
-                                    <p><b>{sentRequest.toName}</b>의 응답이 없나요?</p>
-                                    <p className="mt-2 text-blue-600 font-bold">상대방 국가 대표와 함께 선생님께 가서 직접 교환을 완료하세요.</p>
+                                <h2 className="text-2xl font-black mb-2">외교 요청 전송 중!</h2>
+                                <p className="mb-2 text-slate-500 font-bold">
+                                    <span className="text-blue-600">{sentRequest.fromCountry}</span>에서 (<span className="text-slate-800">{sentRequest.toCountry}</span>)에게
+                                </p>
+                                <p className="mb-8 text-xl font-black">{tokenLabel(sentRequest.type)} {sentRequest.amt}개를 보냅니다.</p>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <button onClick={()=>{db.ref(`game/requests/${sentRequest.toKey}/${sentRequest.id}`).remove();setSentRequest(null);}} className="py-5 bg-slate-100 rounded-3xl font-black text-slate-400">취소</button>
+                                    <div className="py-5 bg-blue-50 rounded-3xl font-black text-blue-300 text-sm flex items-center justify-center">응답 대기 중...</div>
                                 </div>
-                                <button onClick={()=>{db.ref(`game/requests/${sentRequest.toKey}/${sentRequest.id}`).remove();setSentRequest(null);}} className="text-slate-300 font-bold hover:text-red-400">
-                                    전송 요청 취소
-                                </button>
                             </div>
                         </div>
                     )}
