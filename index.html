@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>아동 인권 수호 작전 v3.1.0</title>
+    <title>아동 인권 수호 작전 v3.1.1</title>
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -158,7 +158,10 @@
                 e.preventDefault();
                 if (passwordInput === "9997") { setActiveTab('public'); setPasswordInput(""); setPendingCouncil(null); return; }
                 if (passwordInput === "9998") { setActiveTab('admin');  setPasswordInput(""); setPendingCouncil(null); return; }
-                if (pendingCouncil && (passwordInput === pendingCouncil.password || passwordInput === "9999")) {
+                if (pendingCouncil && passwordInput === "9999") {
+                    setUser({ councilKey: pendingCouncil.key, councilId: pendingCouncil.id, country: selectedCountry, demo: true });
+                    setActiveTab(pendingCouncil.id);
+                } else if (pendingCouncil && passwordInput === pendingCouncil.password) {
                     setUser({ councilKey: pendingCouncil.key, councilId: pendingCouncil.id, country: selectedCountry });
                     setActiveTab(pendingCouncil.id);
                     setPendingCouncil(null); setPasswordInput("");
@@ -169,6 +172,7 @@
             };
 
             const requestTransfer = () => {
+                if (user?.demo) return alert("📋 샘플 모드입니다.\n실제 전송은 팀 보안 코드로 접속하세요.");
                 if (!tfCouncil || !tfCountry) return alert("받는 협의체와 국가를 모두 선택해 주세요.");
                 if (user.councilKey === tfCouncil) return alert("자신의 협의체에는 보낼 수 없습니다.");
                 const have = scores[user.councilKey]?.[tfType] ?? 0;
@@ -191,6 +195,17 @@
                     db.ref('game/logs').push({ from: fromCountry, to: toCountry, type, amt, time: new Date().toLocaleTimeString() });
                 }
                 db.ref(`game/requests/${user.councilKey}/${id}`).remove();
+            };
+
+            const resetGame = () => {
+                if (!window.confirm("수업을 종료하고 모든 데이터를 초기화합니다.\n점수, 로그, 요청이 모두 삭제됩니다. 계속할까요?")) return;
+                db.ref('game').set({
+                    scores: { c1:{red:4,green:9,blue:0}, c2:{red:10,green:1,blue:0}, c3:{red:2,green:4,blue:6} },
+                    logs: null,
+                    requests: null
+                });
+                setTimerSeconds(300); setTimerRunning(false); setTimerStarted(false);
+                alert("초기화 완료! 다음 수업을 시작할 수 있습니다.");
             };
 
             const adminManual = (f, t, type, amt) => {
@@ -409,8 +424,9 @@
                             </div>
                         ))}
                     </div>
-                    <div className="text-center">
-                        <button onClick={()=>setShowScoreModal(true)} className="px-12 py-5 bg-slate-900 text-white rounded-2xl font-black text-xl shadow-2xl">최종 결과 집계</button>
+                    <div className="flex justify-center gap-4 flex-wrap">
+                        <button onClick={()=>setShowScoreModal(true)} className="px-12 py-5 bg-slate-900 text-white rounded-2xl font-black text-xl shadow-2xl">📊 최종 결과 집계</button>
+                        <button onClick={resetGame} className="px-12 py-5 bg-red-500 text-white rounded-2xl font-black text-xl shadow-2xl hover:bg-red-600">🔄 수업 종료 &amp; 초기화</button>
                     </div>
                     {showScoreModal && (
                         <div className="fixed inset-0 modal-overlay flex items-center justify-center z-50 p-6">
@@ -437,11 +453,16 @@
 
             return (
                 <div className="max-w-4xl mx-auto p-4 md:p-8 pb-32">
+                    {user.demo && (
+                        <div className="bg-amber-400 text-amber-900 font-black text-center py-3 px-6 rounded-2xl mb-4 text-sm">
+                            📋 샘플 모드 — 화면 구성 설명용입니다. 토큰 전송은 실제로 적용되지 않습니다.
+                        </div>
+                    )}
                     <header className="flex justify-between items-center mb-6">
                         <button onClick={()=>{setUser(null);setActiveTab(null);}} className="text-gray-400 font-bold bg-white px-4 py-2 rounded-xl shadow-sm">← 로그아웃</button>
-                        <div className="bg-blue-600 text-white px-6 py-2 rounded-full font-black text-sm shadow-xl flex items-center gap-2">
+                        <div className={`${user.demo ? 'bg-amber-500' : 'bg-blue-600'} text-white px-6 py-2 rounded-full font-black text-sm shadow-xl flex items-center gap-2`}>
                             <span className="w-2 h-2 bg-white rounded-full animate-pulse"></span>
-                            {user.country} 대표
+                            {user.country} 대표 {user.demo ? '(샘플)' : ''}
                         </div>
                     </header>
 
