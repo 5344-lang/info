@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>아동 인권 수호 작전 v2.8 (실시간)</title>
+    <title>아동 인권 수호 작전 v2.8.1 (실시간)</title>
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -257,7 +257,7 @@
                                 </div>
                             )}
                         </div>
-                        <h2 className="text-2xl font-bold text-gray-800 mb-4">📊 협의체 현황판 (실시간 수정 가능)</h2>
+                        <h2 className="text-2xl font-bold text-gray-800 mb-4">📊 협의체 현황판 (실시간 반영)</h2>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
                             {councils.filter(c => c.id !== 6).map(council => (
                                 <div key={council.id} className={`bg-white rounded-3xl shadow-lg border-t-8 ${council.theme} p-6`}>
@@ -278,13 +278,13 @@
                                 onClick={() => { if (window.confirm("협의를 종료하겠습니까?")) setShowScoreModal(true); }}
                                 className="bg-blue-500 hover:bg-blue-600 text-white font-black py-5 px-12 rounded-2xl shadow-xl transition-all active:scale-95"
                             >
-                                [점수확인]
+                                점수확인
                             </button>
                             <button
                                 onClick={resetSession}
                                 className="bg-red-500 hover:bg-red-600 text-white font-black py-5 px-12 rounded-2xl shadow-xl transition-all active:scale-95"
                             >
-                                [수업종료] 데이터 전체 리셋
+                                수업종료
                             </button>
                         </div>
                         <p className="text-gray-400 text-sm mt-4 italic">※ [수업종료]를 누르면 모든 협의체의 코인 개수와 전송 로그가 초기화됩니다.</p>
