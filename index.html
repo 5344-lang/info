@@ -3,11 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>아동 인권 수호 작전 v2.1 (실시간)</title>
+    <title>아동 인권 수호 작전 v2.0 (실시간)</title>
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
+    
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap');
         body { font-family: 'Noto Sans KR', sans-serif; -webkit-tap-highlight-color: transparent; }
@@ -16,11 +20,10 @@
 <body class="bg-slate-50 text-gray-800">
     <div id="root"></div>
 
-    <script type="text/babel" type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getDatabase, ref, onValue, update, push, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    <script type="text/babel">
+        const { useState, useEffect } = React;
 
-        // Firebase 설정 (전달해주신 값)
+        // --- Firebase 설정 ---
         const firebaseConfig = {
             apiKey: "AIzaSyA5OUkS9Q-qnYhdKQIcq7mRfMceZnFNedo",
             authDomain: "un-project-26f66.firebaseapp.com",
@@ -32,12 +35,13 @@
             measurementId: "G-Y1TFDRNGK8"
         };
 
-        const app = initializeApp(firebaseConfig);
-        const db = getDatabase(app);
+        // 초기화
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+        const db = firebase.database();
 
-        const { useState, useEffect } = React;
-
-        // 아이콘 컴포넌트 (원본 그대로)
+        // --- 아이콘 컴포넌트 (원본 그대로 유지) ---
         const Globe = () => <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>;
         const Lock = ({size=24}) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>;
         const Shield = ({size=24}) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>;
@@ -51,6 +55,7 @@
         const Construction = ({size=24}) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="18" width="20" height="2" rx="1"/><path d="M17 18v-2a5 5 0 0 0-10 0v2"/><path d="M5 10l7-7 7 7"/></svg>;
         const Users = ({size=24}) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>;
 
+        // --- 애플리케이션 메인 ---
         const App = () => {
             const [activeTab, setActiveTab] = useState(null);
             const [pendingCouncil, setPendingCouncil] = useState(null);
@@ -61,7 +66,7 @@
             const [timerStarted, setTimerStarted] = useState(false);
             const [logs, setLogs] = useState([]);
 
-            // 실시간 점수 상태 (원본 초기값 유지)
+            // 실시간 점수 상태
             const [scores, setScores] = useState({
                 c1: { red: 4, green: 9, blue: 0 },
                 c2: { red: 10, green: 1, blue: 0 },
@@ -69,32 +74,7 @@
                 c6: { red: 5, green: 5, blue: 0 }
             });
 
-            // 1. Firebase 실시간 데이터 연동
-            useEffect(() => {
-                const scoresRef = ref(db, 'game/scores');
-                onValue(scoresRef, (snapshot) => {
-                    const data = snapshot.val();
-                    if (data) setScores(data);
-                    else set(scoresRef, scores); // DB가 비어있으면 초기값으로 서버 세팅
-                });
-
-                const logsRef = ref(db, 'game/logs');
-                onValue(logsRef, (snapshot) => {
-                    const data = snapshot.val();
-                    if (data) setLogs(Object.values(data).reverse().slice(0, 5));
-                });
-            }, []);
-
-            useEffect(() => {
-                if (!timerRunning) return;
-                if (timerSeconds <= 0) { setTimerRunning(false); return; }
-                const id = setInterval(() => setTimerSeconds(s => s - 1), 1000);
-                return () => clearInterval(id);
-            }, [timerRunning, timerSeconds]);
-
-            const formatTime = (s) => `${Math.floor(s / 60)}:${(s % 60).toString().padStart(2, '0')}`;
-
-            // 원본 협의체 데이터 (수정 없음)
+            // 원본 협의체 데이터 (텍스트 100% 보존)
             const councils = [
                 {
                     id: 1, key: 'c1',
@@ -248,26 +228,51 @@
                 }
             ];
 
-            // 2. 실시간 전송/수정 함수
+            // 1. Firebase 실시간 데이터 연동 (Compat 방식)
+            useEffect(() => {
+                const scoresRef = db.ref('game/scores');
+                scoresRef.on('value', (snapshot) => {
+                    const data = snapshot.val();
+                    if (data) setScores(data);
+                    else scoresRef.set(scores);
+                });
+
+                const logsRef = db.ref('game/logs');
+                logsRef.on('value', (snapshot) => {
+                    const data = snapshot.val();
+                    if (data) setLogs(Object.values(data).reverse().slice(0, 5));
+                });
+
+                return () => { scoresRef.off(); logsRef.off(); };
+            }, []);
+
+            // 타이머 로직
+            useEffect(() => {
+                if (!timerRunning || timerSeconds <= 0) return;
+                const id = setInterval(() => setTimerSeconds(s => s - 1), 1000);
+                return () => clearInterval(id);
+            }, [timerRunning, timerSeconds]);
+
+            // 실시간 업데이트 함수
             const transferToken = (fromKey, toKey, type, amount) => {
                 const amt = parseInt(amount);
-                if (scores[fromKey][type] < amt) { alert("보유한 토큰이 부족합니다!"); return; }
+                if (scores[fromKey][type] < amt) return alert("토큰이 부족합니다!");
                 
                 const updates = {};
                 updates[`game/scores/${fromKey}/${type}`] = scores[fromKey][type] - amt;
                 updates[`game/scores/${toKey}/${type}`] = scores[toKey][type] + amt;
-                update(ref(db), updates);
-
-                push(ref(db, 'game/logs'), {
+                
+                db.ref().update(updates);
+                db.ref('game/logs').push({
                     from: councils.find(c => c.key === fromKey).name,
                     to: councils.find(c => c.key === toKey).name,
                     type, amt, time: new Date().toLocaleTimeString()
                 });
-                alert("전송 완료!");
+                alert("전송 성공!");
             };
 
             const updateManual = (key, type, val) => {
-                update(ref(db), { [`game/scores/${key}/${type}`]: Math.max(0, val) });
+                db.ref(`game/scores/${key}/${type}`).set(Math.max(0, val));
             };
 
             const handlePasswordSubmit = (e) => {
@@ -301,7 +306,7 @@
 
             const finalResults = calculateResults();
 
-            // 관리자용 수정 버튼
+            // 관리자 수정 컴포넌트
             const CoinControl = ({ councilKey, color, bgColor, label }) => (
                 <div className="flex flex-col items-center bg-white p-3 rounded-2xl shadow-sm border border-gray-100 min-w-[100px]">
                     <span className="text-[10px] font-bold text-gray-400 mb-2">{label}</span>
@@ -313,7 +318,7 @@
                 </div>
             );
 
-            // 학생용 전송 패널
+            // 학생용 전송 패널 컴포넌트
             const TransferPanel = ({councilKey}) => {
                 const [to, setTo] = useState("");
                 const [type, setType] = useState("red");
@@ -322,17 +327,17 @@
                     <div className="mt-8 p-6 bg-slate-900 text-white rounded-3xl shadow-xl">
                         <h3 className="text-lg font-black mb-4 flex items-center gap-2">🚀 토큰 전송 (외교 활동)</h3>
                         <div className="space-y-4 text-sm">
-                            <select value={to} onChange={(e)=>setTo(e.target.value)} className="w-full p-3 bg-slate-800 border-none rounded-xl font-bold">
+                            <select value={to} onChange={(e)=>setTo(e.target.value)} className="w-full p-3 bg-slate-800 border-none rounded-xl font-bold outline-none">
                                 <option value="">받는 협의체 선택</option>
-                                {councils.filter(c => c.key !== councilKey).map(c => <option key={c.key} value={c.key}>{c.name}</option>)}
+                                {councils.filter(c => c.key !== councilKey && c.id !== 6).map(c => <option key={c.key} value={c.key}>{c.name}</option>)}
                             </select>
                             <div className="grid grid-cols-2 gap-2">
-                                <select value={type} onChange={(e)=>setType(e.target.value)} className="p-3 bg-slate-800 border-none rounded-xl font-bold">
+                                <select value={type} onChange={(e)=>setType(e.target.value)} className="p-3 bg-slate-800 border-none rounded-xl font-bold outline-none">
                                     <option value="red">🔴 위기 아동</option>
                                     <option value="green">🟢 복지 예산</option>
                                     <option value="blue">🔵 경제 예산</option>
                                 </select>
-                                <input type="number" value={amt} onChange={(e)=>setAmt(e.target.value)} min="1" className="p-3 bg-slate-800 border-none rounded-xl text-center font-bold" />
+                                <input type="number" value={amt} onChange={(e)=>setAmt(e.target.value)} min="1" className="p-3 bg-slate-800 border-none rounded-xl text-center font-bold outline-none" />
                             </div>
                             <button onClick={() => to ? transferToken(councilKey, to, type, amt) : alert("협의체를 선택하세요!")} className="w-full py-4 bg-blue-500 hover:bg-blue-600 rounded-xl font-black transition-all">전송 승인</button>
                         </div>
@@ -463,7 +468,12 @@
                         <div className="p-8 space-y-12">
                             <section><div className="flex items-center gap-3 mb-5"><span className="text-yellow-500"><EyeOff size={24} /></span><h3 className="text-2xl font-bold text-gray-900">우리 팀 상황</h3></div><div className="bg-yellow-50 p-6 rounded-2xl border-l-4 border-yellow-400 italic text-gray-700 text-lg mb-6">"{council.quote}"</div><p className="text-gray-600 text-base">{council.description}</p></section>
                             <section><div className="flex items-center gap-3 mb-5"><span className="text-purple-500"><Users size={24} /></span><h3 className="text-2xl font-bold text-gray-900">팀원 역할 분담</h3></div><div className="grid gap-3">{council.roles.map((r, i) => (<div key={i} className="bg-purple-50 border border-purple-200 rounded-2xl p-4"><div className="flex items-center gap-2 mb-1"><span className="font-bold text-gray-800">{r.country}</span><span className="text-xs bg-purple-200 text-purple-800 px-2 py-0.5 rounded-full font-bold">{r.role}</span></div><p className="text-sm text-gray-600">{r.job}</p></div>))}</div></section>
-                            <section><div className="flex items-center gap-3 mb-5"><span className="text-blue-500"><Shield size={24} /></span><h3 className="text-2xl font-bold text-gray-900">우리 팀 미션</h3></div><div className="grid gap-5">{council.missions.map((m) => (<div key={m.id} className="bg-blue-50 border border-blue-200 rounded-2xl p-6"><div className="flex items-center gap-3 mb-4"><span className="text-blue-600 font-black text-sm px-2 py-1 bg-blue-200 rounded-lg">{m.id}</span><span className="text-gray-900 font-bold text-lg">{m.title}</span></div><ol className="space-y-3">{m.steps.map((step, idx) => (<li key={idx} className="flex items-start gap-3 text-gray-700 text-base"><span className="flex-shrink-0 w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center text-xs font-black">{idx + 1}</span><span className="leading-relaxed">{step}</span></li>))}</ol></div>))}</div></section>
+                            <section><div className="flex items-center gap-3 mb-5"><span className="text-blue-500"><Shield size={24} /></span><h3 className="text-2xl font-bold text-gray-900">우리 팀 미션</h3></div><div className="grid gap-5">{council.missions.map((m) => (
+                                <div key={m.id} className="bg-blue-50 border border-blue-200 rounded-2xl p-6">
+                                    <div className="flex items-center gap-3 mb-4"><span className="text-blue-600 font-black text-sm px-2 py-1 bg-blue-200 rounded-lg">{m.id}</span><span className="text-gray-900 font-bold text-lg">{m.title}</span></div>
+                                    <ol className="space-y-3">{m.steps.map((step, idx) => (<li key={idx} className="flex items-start gap-3 text-gray-700 text-base"><span className="flex-shrink-0 w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center text-xs font-black">{idx + 1}</span><span className="leading-relaxed">{step}</span></li>))}</ol>
+                                </div>
+                            ))}</div></section>
                             <section><div className="flex items-center gap-3 mb-5"><span className="text-emerald-500"><TrendingUp size={24} /></span><h3 className="text-2xl font-bold text-gray-900">이기는 방법</h3></div><div className="grid gap-3">{council.winConditions.map((cond, idx) => (<div key={idx} className="flex items-center justify-between bg-gray-50 p-5 rounded-2xl border border-gray-200"><div className="flex items-center gap-3"><ChevronRight size={16} className="text-emerald-500 flex-shrink-0" /><span className="text-gray-700 font-medium text-sm">{cond.text}</span></div><span className={`ml-4 flex-shrink-0 px-4 py-1.5 rounded-full text-xs font-black border ${cond.point < 0 ? 'bg-red-100 text-red-600 border-red-200' : 'bg-emerald-100 text-emerald-700 border-emerald-200'}`}>{cond.point < 0 ? cond.point : `+${cond.point}`}</span></div>))}</div></section>
                         </div>
                     </div>
@@ -478,8 +488,9 @@
                     {pendingCouncil && renderPasswordScreen()}
                     {activeTab === 'score' && renderScoreCalculator()}
                     {activeTab === 'public' && renderPublicBoard()}
-                    {typeof activeTab === 'number' && renderCouncilPage(councils.find(c => c.id === activeTab))}
                     {activeTab === 'admin' && renderPublicBoard()}
+                    {activeTab === 6 && renderCouncilPage(councils.find(c => c.id === 6))}
+                    {typeof activeTab === 'number' && activeTab !== 6 && renderCouncilPage(councils.find(c => c.id === activeTab))}
                 </div>
             );
         };
