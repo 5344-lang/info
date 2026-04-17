@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>아동 인권 수호 작전 v3.2.1</title>
+    <title>아동 인권 수호 작전 v3.2.2</title>
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -155,10 +155,12 @@
             const [tfType, setTfType]       = useState("red");
             const [tfAmt, setTfAmt]         = useState(1);
             // 관리자 수동 제어 (if 블록 안에 두면 Hooks 오류 → 최상단 선언)
-            const [af, setAf]   = useState("c1");
-            const [at, setAt]   = useState("c2");
-            const [aty, setAty] = useState("red");
-            const [aa, setAa]   = useState(1);
+            const [af, setAf]         = useState("c1");
+            const [afCountry, setAfCountry] = useState("");
+            const [at, setAt]         = useState("c2");
+            const [atCountry, setAtCountry] = useState("");
+            const [aty, setAty]       = useState("red");
+            const [aa, setAa]         = useState(1);
             const [c3WelfareGiven, setC3WelfareGiven] = useState(false);
             const [sessionActive, setSessionActive]   = useState(null); // null = 로딩 중
             const [pwHashes, setPwHashes]             = useState(null); // null = 로딩 중
@@ -223,16 +225,20 @@
                     session_active: false
                 });
                 setTimerSeconds(300); setTimerRunning(false); setTimerStarted(false);
-                alert("초기화 완료!");
+                alert("초기화 완료! 다음 수업을 시작할 수 있습니다.");
             };
 
-            const adminManual = (f, t, type, amt) => {
+            const adminManual = (f, fC, t, tC, type, amt) => {
                 if (f === t) return alert("보내는 팀과 받는 팀이 같습니다.");
+                if (!fC) return alert("보내는 국가를 선택해 주세요.");
+                if (!tC) return alert("받는 국가를 선택해 주세요.");
                 const amount = parseInt(amt);
                 const updates = {};
                 updates[`game/scores/${f}/${type}`] = Math.max(0, (scores[f]?.[type] || 0) - amount);
                 updates[`game/scores/${t}/${type}`] = (scores[t]?.[type] || 0) + amount;
                 db.ref().update(updates);
+                db.ref('game/logs').push({ from: fC, to: tC, type, amt: amount, time: new Date().toLocaleTimeString() });
+                if (f === 'c3' && type === 'green') db.ref('game/c3_welfare_given').set(true);
                 alert("수동 전송 완료");
             };
 
@@ -379,7 +385,7 @@
                         <div className="fixed inset-0 modal-overlay flex items-center justify-center z-50 p-6">
                             <div className="bg-white rounded-3xl shadow-2xl p-10 max-w-sm w-full popup-in text-center">
                                 <div className="text-4xl mb-4">🔑</div>
-                                <h2 className="text-xl font-black mb-6">확인</h2>
+                                <h2 className="text-xl font-black mb-6">선생님 확인</h2>
                                 <form onSubmit={async (e)=>{
                                     e.preventDefault();
                                     if (!pwHashes) return;
@@ -387,12 +393,12 @@
                                     if (h === pwHashes.public || h === pwHashes.admin) {
                                         db.ref('game/session_active').set(true);
                                     } else {
-                                        alert('수업 시작 코드가 아닙니다.');
+                                        alert('선생님 코드가 아닙니다.');
                                     }
                                     setPasswordInput(''); setPendingCouncil(null);
                                 }} className="space-y-4">
                                     <input type="password" value={passwordInput} onChange={e=>setPasswordInput(e.target.value)}
-                                        placeholder="수업 시작 코드 입력" autoFocus
+                                        placeholder="선생님 코드 입력" autoFocus
                                         className="w-full p-4 bg-gray-50 rounded-xl text-center text-xl border-2 border-gray-100" />
                                     <div className="grid grid-cols-2 gap-2">
                                         <button type="button" onClick={()=>{setPendingCouncil(null);setPasswordInput('');}} className="p-4 font-bold text-gray-400 hover:bg-gray-50 rounded-xl">취소</button>
@@ -426,7 +432,7 @@
                 </div>
             );
 
-            if (pendingCouncil) return (
+            if (pendingCouncil && pendingCouncil.key !== '__admin__') return (
                 <div className="flex flex-col items-center justify-center min-h-screen p-6 bg-slate-100">
                     <div className="bg-white p-8 rounded-3xl shadow-xl max-w-md w-full text-center">
                         <div className="text-5xl mb-6">🔒</div>
@@ -440,7 +446,7 @@
                                 </select>
                             </div>
                             <div>
-                                <label className="text-xs font-bold text-gray-400 ml-1 block mb-1">팀 보안 코드</label>
+                                <label className="text-xs font-bold text-gray-400 ml-1 block mb-1">팀 보안 코드 (선생님이 알려줍니다)</label>
                                 <input type="password" value={passwordInput} onChange={e=>setPasswordInput(e.target.value)} placeholder="••••" className="w-full p-4 bg-gray-50 rounded-xl text-center text-xl border-2 border-gray-100" autoFocus />
                             </div>
                             <div className="grid grid-cols-2 gap-2 pt-4">
@@ -459,10 +465,27 @@
                         <h2 className="text-2xl font-black flex items-center gap-2 text-yellow-600"><Calculator /> 수동 제어 모드 (선생님 전용)</h2>
                         <p className="text-sm text-gray-400">학생 기기에서 전송이 안 될 때 직접 토큰을 이동할 수 있습니다.</p>
                         <div className="space-y-3">
-                            <label className="text-xs font-bold text-gray-400">보내는 팀 → 받는 팀</label>
                             <div className="grid grid-cols-2 gap-4">
-                                <select value={af} onChange={e=>setAf(e.target.value)} className="p-4 bg-slate-50 rounded-xl font-bold border-2 border-slate-100">{councils.map(c=><option key={c.key} value={c.key}>{c.name}</option>)}</select>
-                                <select value={at} onChange={e=>setAt(e.target.value)} className="p-4 bg-slate-50 rounded-xl font-bold border-2 border-slate-100">{councils.map(c=><option key={c.key} value={c.key}>{c.name}</option>)}</select>
+                                <div className="space-y-2">
+                                    <label className="text-xs font-bold text-gray-400">보내는 팀</label>
+                                    <select value={af} onChange={e=>{setAf(e.target.value);setAfCountry("");}} className="w-full p-4 bg-slate-50 rounded-xl font-bold border-2 border-slate-100">
+                                        {councils.map(c=><option key={c.key} value={c.key}>{c.name}</option>)}
+                                    </select>
+                                    <select value={afCountry} onChange={e=>setAfCountry(e.target.value)} className="w-full p-4 bg-slate-50 rounded-xl font-bold border-2 border-slate-100">
+                                        <option value="">국가 선택</option>
+                                        {councils.find(c=>c.key===af)?.countries.map(ct=><option key={ct} value={ct}>{ct}</option>)}
+                                    </select>
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-xs font-bold text-gray-400">받는 팀</label>
+                                    <select value={at} onChange={e=>{setAt(e.target.value);setAtCountry("");}} className="w-full p-4 bg-slate-50 rounded-xl font-bold border-2 border-slate-100">
+                                        {councils.map(c=><option key={c.key} value={c.key}>{c.name}</option>)}
+                                    </select>
+                                    <select value={atCountry} onChange={e=>setAtCountry(e.target.value)} className="w-full p-4 bg-slate-50 rounded-xl font-bold border-2 border-slate-100">
+                                        <option value="">국가 선택</option>
+                                        {councils.find(c=>c.key===at)?.countries.map(ct=><option key={ct} value={ct}>{ct}</option>)}
+                                    </select>
+                                </div>
                             </div>
                             <div className="grid grid-cols-2 gap-4">
                                 <select value={aty} onChange={e=>setAty(e.target.value)} className="p-4 bg-slate-50 rounded-xl font-bold border-2 border-slate-100">
@@ -470,7 +493,7 @@
                                 </select>
                                 <input type="number" min="1" value={aa} onChange={e=>setAa(e.target.value)} className="p-4 bg-slate-50 rounded-xl font-bold text-center border-2 border-slate-100" />
                             </div>
-                            <button onClick={()=>adminManual(af,at,aty,aa)} className="w-full py-5 bg-slate-900 text-white rounded-2xl font-black text-lg">강제 전송 실행</button>
+                            <button onClick={()=>adminManual(af,afCountry,at,atCountry,aty,aa)} className="w-full py-5 bg-slate-900 text-white rounded-2xl font-black text-lg">강제 전송 실행</button>
                         </div>
                         <div>
                             <h3 className="font-black text-sm text-gray-400 mb-3">현재 점수 현황</h3>
@@ -525,7 +548,7 @@
                     <div className="flex justify-center gap-4 flex-wrap">
                         {!sessionActive && (
                             <button onClick={()=>db.ref('game/session_active').set(true)} className="px-12 py-5 bg-green-500 text-white rounded-2xl font-black text-xl shadow-2xl hover:bg-green-600">
-                                🟢 수업 시작 (학생 접속 허용)
+                                🟢 수업 시작
                             </button>
                         )}
                         <button onClick={()=>setShowScoreModal(true)} className="px-12 py-5 bg-slate-900 text-white rounded-2xl font-black text-xl shadow-2xl">📊 최종 결과 집계</button>
