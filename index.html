@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>아동 인권 수호 작전 v3.1.0</title>
+    <title>아동 인권 수호 작전 v3.9</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌍</text></svg>">
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
@@ -748,10 +748,10 @@
                                             </select>
                                         </div>
                                     </div>
-                                    <div className="grid grid-cols-2 gap-3 font-black">
+                                    <div className="flex flex-col gap-3 font-black">
                                         <div>
                                             <label className="text-xs text-slate-400 mb-1 block">토큰 종류</label>
-                                            <select value={tfType} onChange={e=>setTfType(e.target.value)} className="w-full p-4 bg-slate-800 rounded-xl border-none">
+                                            <select value={tfType} onChange={e=>{setTfType(e.target.value);setTfAmt(1);}} className="w-full p-4 bg-slate-800 rounded-xl border-none">
                                                 <option value="red">🔴 위기아동</option>
                                                 <option value="green">🟢 복지기금</option>
                                                 <option value="blue">🔵 경제력</option>
@@ -762,7 +762,7 @@
                                             <div className="flex bg-slate-800 rounded-xl overflow-hidden h-[56px]">
                                                 <button onClick={()=>setTfAmt(Math.max(1,tfAmt-1))} className="px-5 bg-slate-700 font-black text-xl hover:bg-slate-600">-</button>
                                                 <div className="flex-1 flex items-center justify-center text-lg">{tfAmt}</div>
-                                                <button onClick={()=>setTfAmt(tfAmt+1)} className="px-5 bg-slate-700 font-black text-xl hover:bg-slate-600">+</button>
+                                                <button onClick={()=>setTfAmt(Math.min(tfAmt+1, scores[cur.key]?.[tfType]??0))} className="px-5 bg-slate-700 font-black text-xl hover:bg-slate-600">+</button>
                                             </div>
                                         </div>
                                     </div>
@@ -842,7 +842,7 @@
                                 <div className="w-20 h-20 bg-blue-50 text-blue-500 rounded-full flex items-center justify-center mx-auto mb-6 text-3xl font-black shadow-inner border border-blue-100">{popupTimer}</div>
                                 <h2 className="text-2xl font-black mb-2">외교 요청 도착!</h2>
                                 <p className="mb-2 text-slate-500 font-bold">
-                                    <span className="text-blue-600">{incomingRequest.fromCountry}</span>에서 (<span className="text-slate-800">{incomingRequest.toCountry}</span>)에게
+                                    <span className="text-blue-600">{incomingRequest.fromCountry}</span>에서 우리 국가에게
                                 </p>
                                 <p className="mb-8 text-xl font-black">{tokenLabel(incomingRequest.type)} {incomingRequest.amt}개를 보냅니다.</p>
                                 <div className="grid grid-cols-2 gap-4">
@@ -859,7 +859,7 @@
                                 <div className="w-20 h-20 bg-blue-50 text-blue-500 rounded-full flex items-center justify-center mx-auto mb-6 text-3xl font-black shadow-inner border border-blue-100">{popupTimer}</div>
                                 <h2 className="text-2xl font-black mb-2">외교 요청 전송 중!</h2>
                                 <p className="mb-2 text-slate-500 font-bold">
-                                    <span className="text-blue-600">{sentRequest.fromCountry}</span>에서 (<span className="text-slate-800">{sentRequest.toCountry}</span>)에게
+                                    우리 국가가 <span className="text-blue-600">{sentRequest.toCountry}</span>에게
                                 </p>
                                 <p className="mb-8 text-xl font-black">{tokenLabel(sentRequest.type)} {sentRequest.amt}개를 보냅니다.</p>
                                 <div className="grid grid-cols-2 gap-4">
