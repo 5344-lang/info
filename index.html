@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>아동 인권 수호 작전 v3.1.1</title>
+    <title>아동 인권 수호 작전 v3.2</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌍</text></svg>">
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
@@ -167,6 +167,10 @@
             const [c3WelfareGiven, setC3WelfareGiven] = useState(false);
             const [sessionActive, setSessionActive]   = useState(null); // null = 로딩 중
             const [pwHashes, setPwHashes]             = useState(null); // null = 로딩 중
+            const [repCountries, setRepCountries]     = useState({c1:"", c2:"", c3:""});
+
+            // 대표국가 여부: 미지정이면 전체 사용 가능, 지정되면 대표만 코인 이동 UI 표시
+            const isRep = !user || !repCountries[user?.councilKey] || user.country === repCountries[user?.councilKey];
 
             // ── 함수 ──────────────────────────────────────────────────
 
@@ -192,6 +196,7 @@
 
             const requestTransfer = () => {
                 if (user?.demo) return alert("📋 샘플 모드입니다.\n실제 전송은 팀 보안 코드로 접속하세요.");
+                if (!isRep) return alert("대표국가만 전송할 수 있습니다.");
                 if (!tfCouncil || !tfCountry) return alert("받는 협의체와 국가를 모두 선택해 주세요.");
                 if (tfAmt <= 0) return alert("수량은 1개 이상이어야 합니다.");
                 if (user.councilKey === tfCouncil) return alert("자신의 협의체에는 보낼 수 없습니다.");
@@ -237,6 +242,7 @@
                     scores: { c1:{red:3,green:10,blue:4}, c2:{red:12,green:1,blue:0}, c3:{red:1,green:2,blue:10} },
                     logs: null,
                     requests: null,
+                    rep_countries: null,
                     c3_welfare_given: false,
                     session_active: false
                 });
@@ -278,6 +284,10 @@
                 db.ref('game/logs').on('value', snap => snap.val() && setLogs(Object.values(snap.val()).reverse().slice(0,5)));
                 db.ref('game/c3_welfare_given').on('value', snap => setC3WelfareGiven(!!snap.val()));
                 db.ref('game/session_active').on('value', snap => setSessionActive(!!snap.val()));
+                db.ref('game/rep_countries').on('value', snap => {
+                    const v = snap.val() || {};
+                    setRepCountries({c1: v.c1||"", c2: v.c2||"", c3: v.c3||""});
+                });
                 // 비번 해시 로드 (없으면 기본값으로 초기화)
                 db.ref('game/config').once('value', async snap => {
                     if (snap.val()?.pw) {
@@ -298,6 +308,7 @@
                     db.ref('game/c3_welfare_given').off();
                     db.ref('game/session_active').off();
                     db.ref('game/config/pw').off();
+                    db.ref('game/rep_countries').off();
                 };
             }, []);
 
@@ -588,7 +599,7 @@
                             </div>
                         )}
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                         {councils.map(c=>(
                             <div key={c.id} className={`bg-white rounded-3xl p-6 border-t-8 ${c.theme} shadow-lg`}>
                                 <h3 className={`font-black text-xl mb-4 ${c.accent}`}>{c.name}</h3>
@@ -599,6 +610,29 @@
                                 </div>
                             </div>
                         ))}
+                    </div>
+
+                    <div className="bg-white rounded-3xl shadow-lg p-6 mb-8">
+                        <h3 className="font-black text-gray-500 text-sm uppercase tracking-widest mb-4">🎖️ 협의체별 대표국가 지정</h3>
+                        <p className="text-xs text-gray-400 mb-4">대표국가로 지정된 국가만 외교 토큰 전송·수락 화면이 표시됩니다. 비워두면 전체 사용 가능.</p>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            {councils.map(c=>(
+                                <div key={c.key} className={`p-4 rounded-2xl border-t-4 bg-slate-50 ${c.theme}`}>
+                                    <h4 className={`font-black text-sm mb-3 ${c.accent}`}>{c.name}</h4>
+                                    <select
+                                        value={repCountries[c.key]}
+                                        onChange={e => db.ref(`game/rep_countries/${c.key}`).set(e.target.value || null)}
+                                        className="w-full p-3 bg-white rounded-xl font-bold border-2 border-slate-200 text-sm"
+                                    >
+                                        <option value="">— 미지정 (전체 가능) —</option>
+                                        {c.countries.map(ct=><option key={ct} value={ct}>{ct}</option>)}
+                                    </select>
+                                    {repCountries[c.key] && (
+                                        <p className="text-xs font-black mt-2 text-emerald-600">✅ 현재 대표: {repCountries[c.key]}</p>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
                     </div>
                     {logs.length > 0 && (
                         <div className="bg-white rounded-3xl shadow-lg p-6 mb-8">
@@ -866,9 +900,10 @@
                         </div>
 
                         <div className="p-8">
+                            {isRep ? (
                             <section className="bg-slate-900 text-white p-6 rounded-3xl shadow-2xl">
                                 <h3 className="font-black mb-1 text-lg">🚀 외교 토큰 전송</h3>
-                                <p className="text-slate-400 text-xs mb-5">상대방이 20초 안에 응답해야 합니다. 전송 후 상대방 화면을 확인하세요.</p>
+                                <p className="text-slate-400 text-xs mb-5">상대방 대표국가가 20초 안에 응답해야 합니다. 전송 후 상대방 화면을 확인하세요.</p>
                                 <div className="space-y-4">
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                                         <div>
@@ -879,11 +914,18 @@
                                             </select>
                                         </div>
                                         <div>
-                                            <label className="text-xs text-slate-400 mb-1 block">받는 국가 (담당자)</label>
+                                            <label className="text-xs text-slate-400 mb-1 block">받는 국가 (대표)</label>
                                             <select value={tfCountry} onChange={e=>setTfCountry(e.target.value)} className="w-full p-4 bg-slate-800 rounded-xl font-bold border-none" disabled={!tfCouncil}>
                                                 <option value="">{tfCouncil ? "국가 선택" : "협의체를 먼저 선택"}</option>
-                                                {targetCouncilData?.countries.map(ct=><option key={ct} value={ct}>{ct}</option>)}
+                                                {targetCouncilData?.countries.map(ct=>(
+                                                    <option key={ct} value={ct}>
+                                                        {ct}{repCountries[tfCouncil]===ct ? " 🎖️ 대표" : ""}
+                                                    </option>
+                                                ))}
                                             </select>
+                                            {tfCouncil && repCountries[tfCouncil] && (
+                                                <p className="text-xs text-emerald-400 mt-1">🎖️ 현재 대표: {repCountries[tfCouncil]}</p>
+                                            )}
                                         </div>
                                     </div>
                                     <div className="flex flex-col gap-3 font-black">
@@ -909,6 +951,15 @@
                                     </button>
                                 </div>
                             </section>
+                            ) : (
+                            <section className="bg-slate-800 text-white p-8 rounded-3xl text-center">
+                                <div className="text-4xl mb-3">🎖️</div>
+                                <p className="font-black text-lg mb-2">외교 협상은 대표국가가 담당합니다</p>
+                                <p className="text-slate-400 text-sm">현재 우리 팀 대표국가:
+                                    <span className="text-blue-300 font-black ml-2">{repCountries[cur.key]}</span>
+                                </p>
+                            </section>
+                            )}
                         </div>
 
                         <div className="p-8 space-y-14">
@@ -974,13 +1025,13 @@
                         </div>
                     </div>
 
-                    {incomingRequest && (
+                    {incomingRequest && isRep && (
                         <div className="fixed inset-0 modal-overlay flex items-center justify-center z-50 p-6 text-center">
                             <div className="bg-white rounded-[40px] shadow-2xl p-10 max-w-sm w-full popup-in">
                                 <div className="w-20 h-20 bg-blue-50 text-blue-500 rounded-full flex items-center justify-center mx-auto mb-6 text-3xl font-black shadow-inner border border-blue-100">{popupTimer}</div>
                                 <h2 className="text-2xl font-black mb-2">외교 요청 도착!</h2>
                                 <p className="mb-2 text-slate-500 font-bold">
-                                    <span className="text-blue-600">{incomingRequest.fromCountry}</span>에서 우리 국가에게
+                                    <span className="text-blue-600">{incomingRequest.fromCountry}</span>에서 우리 협의체에게
                                 </p>
                                 <p className="mb-8 text-xl font-black">{tokenLabel(incomingRequest.type)} {incomingRequest.amt}개를 보냅니다.</p>
                                 <div className="grid grid-cols-2 gap-4">
