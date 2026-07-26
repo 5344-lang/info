@@ -1,16 +1,17 @@
 {
   "hosting": {
-    "public": "public",
+    "public": ".",
     "ignore": [
       "firebase.json",
+      "firebase-debug.log",
+      ".firebaserc",
+      "skills-lock.json",
+      "database.rules.json",
       "**/.*",
       "**/node_modules/**"
-    ],
-    "rewrites": [
-      {
-        "source": "**",
-        "destination": "/index.html"
-      }
     ]
+  },
+  "database": {
+    "rules": "database.rules.json"
   }
 }
